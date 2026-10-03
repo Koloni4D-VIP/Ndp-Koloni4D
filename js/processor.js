@@ -62,6 +62,9 @@ function prosesAudit(acuanUsers, depositRows) {
   }));
 }
 
+/**
+ * Hitung ringkasan dari hasilFinal.
+ */
 function hitungRingkasan(hasilFinal) {
   const totalDepo    = hasilFinal.reduce((a, b) => a + b.depo, 0);
   const totalFreebet = hasilFinal.reduce((a, b) => a + b.freebet, 0);
@@ -82,18 +85,6 @@ function buildTSV(hasilFinal) {
       r.freebet,
     ].join('\t'));
   });
-
-  return lines.join('\n');
-}
-
-  const { totalDepo, totalFreebet, depoCount, freebetCount } = hitungRingkasan(hasilFinal);
-  lines.push('');
-  lines.push(['Keterangan', 'Nilai'].join('\t'));
-  lines.push(['Total User ID', hasilFinal.length].join('\t'));
-  lines.push(['User Punya DEPO (QRIS HOKI)', depoCount].join('\t'));
-  lines.push(['Total DEPO', totalDepo].join('\t'));
-  lines.push(['User Punya FREEBET (SCB)', freebetCount].join('\t'));
-  lines.push(['Total FREEBET', totalFreebet].join('\t'));
 
   return lines.join('\n');
 }
