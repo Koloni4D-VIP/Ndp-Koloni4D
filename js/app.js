@@ -1,27 +1,54 @@
 /* =========================================================
-   app.js — UI Controller (event handler & render)
+   app.js — UI Controller + Navigasi
    ========================================================= */
 
-// ================== STATE ==================
+/* ---------- NAVIGASI SIDEBAR ---------- */
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const page = item.dataset.page;
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    item.classList.add('active');
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const target = document.getElementById('page-' + page);
+    if (target) target.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+});
+
+/* ---------- COLLAPSE SIDEBAR ---------- */
+const sidebar = document.getElementById('sidebar');
+const collapseBtn = document.getElementById('collapseBtn');
+collapseBtn?.addEventListener('click', () => {
+  sidebar.classList.toggle('collapsed');
+  collapseBtn.textContent = sidebar.classList.contains('collapsed') ? '⇥' : '⇤';
+  localStorage.setItem('sidebar_collapsed', sidebar.classList.contains('collapsed'));
+});
+if (localStorage.getItem('sidebar_collapsed') === 'true') {
+  sidebar.classList.add('collapsed');
+  if (collapseBtn) collapseBtn.textContent = '⇥';
+}
+
+/* =========================================================
+   NDP — AUDIT
+   ========================================================= */
 let acuanUsers = [];
 let depositRows = [];
 let hasilFinal = [];
 
-// ================== ELEMEN ==================
-const fileAcuan   = document.getElementById('fileAcuan');
-const fileDeposit = document.getElementById('fileDeposit');
-const boxAcuan    = document.getElementById('boxAcuan');
-const boxDeposit  = document.getElementById('boxDeposit');
-const nameAcuan   = document.getElementById('nameAcuan');
-const nameDeposit = document.getElementById('nameDeposit');
-const infoAcuan   = document.getElementById('infoAcuan');
-const infoDeposit = document.getElementById('infoDeposit');
-const btnProses   = document.getElementById('btnProses');
-const btnReset    = document.getElementById('btnReset');
-const btnDownload = document.getElementById('btnDownload');
-const btnCopy     = document.getElementById('btnCopy');
-const hasilSection= document.getElementById('hasilSection');
-const statusMsg   = document.getElementById('statusMsg');
+const fileAcuan    = document.getElementById('fileAcuan');
+const fileDeposit  = document.getElementById('fileDeposit');
+const boxAcuan     = document.getElementById('boxAcuan');
+const boxDeposit   = document.getElementById('boxDeposit');
+const nameAcuan    = document.getElementById('nameAcuan');
+const nameDeposit  = document.getElementById('nameDeposit');
+const infoAcuan    = document.getElementById('infoAcuan');
+const infoDeposit  = document.getElementById('infoDeposit');
+const btnProses    = document.getElementById('btnProses');
+const btnReset     = document.getElementById('btnReset');
+const btnDownload  = document.getElementById('btnDownload');
+const btnCopy      = document.getElementById('btnCopy');
+const hasilSection = document.getElementById('hasilSection');
+const statusMsg    = document.getElementById('statusMsg');
 
 function setStatus(msg, type = 'info') {
   statusMsg.textContent = msg;
@@ -34,7 +61,7 @@ function cekSiapProses() {
   btnReset.disabled  = !(acuanUsers.length || depositRows.length);
 }
 
-// ================== UPLOAD: FILE ACUAN ==================
+/* Upload TableData */
 fileAcuan.addEventListener('change', (e) => {
   const f = e.target.files[0];
   if (!f) return;
@@ -47,26 +74,35 @@ fileAcuan.addEventListener('change', (e) => {
   const reader = new FileReader();
   reader.onload = (evt) => {
     try {
-      acuanUsers = Parser.parseAcuan(evt.target.result);
+      let text = '';
+      if (typeof evt.target.result === 'string') {
+        text = evt.target.result;
+      } else {
+        const data = new Uint8Array(evt.target.result);
+        const wb = XLSX.read(data, { type: 'array' });
+        const sheet = wb.Sheets[wb.SheetNames[0]];
+        text = XLSX.utils.sheet_to_csv(sheet);
+      }
+      acuanUsers = Parser.parseAcuan(text);
       nameAcuan.textContent = '✅ ' + f.name;
       boxAcuan.classList.add('filled');
       infoAcuan.textContent = `${acuanUsers.length} user terbaca`;
-      setStatus(`✅ File TableData OK — ${acuanUsers.length} user berhasil diekstrak`, 'success');
+      setStatus(`✅ TableData OK — ${acuanUsers.length} user`, 'success');
       cekSiapProses();
     } catch (err) {
-      console.error(err);
       nameAcuan.textContent = '❌ ' + f.name;
       boxAcuan.classList.add('error');
       infoAcuan.textContent = err.message;
-      setStatus('❌ Gagal baca file TableData: ' + err.message, 'error');
+      setStatus('❌ Gagal: ' + err.message, 'error');
       acuanUsers = [];
       cekSiapProses();
     }
   };
-  reader.readAsArrayBuffer(f);
+  if (/\.(xlsx|xls)$/i.test(f.name)) reader.readAsArrayBuffer(f);
+  else reader.readAsText(f, 'UTF-8');
 });
 
-// ================== UPLOAD: FILE DEPOSIT ==================
+/* Upload Deposit */
 fileDeposit.addEventListener('change', (e) => {
   const f = e.target.files[0];
   if (!f) return;
@@ -90,46 +126,37 @@ fileDeposit.addEventListener('change', (e) => {
       }
       depositRows = Parser.parseDeposit(text);
       if (!depositRows.length) throw new Error('File deposit kosong');
-
       nameDeposit.textContent = '✅ ' + f.name;
       boxDeposit.classList.add('filled');
       infoDeposit.textContent = `${depositRows.length} baris terbaca`;
-      setStatus(`✅ File deposit OK — ${depositRows.length} baris terbaca`, 'success');
+      setStatus(`✅ Deposit OK — ${depositRows.length} baris`, 'success');
       cekSiapProses();
     } catch (err) {
-      console.error(err);
       nameDeposit.textContent = '❌ ' + f.name;
       boxDeposit.classList.add('error');
       infoDeposit.textContent = err.message;
-      setStatus('❌ Gagal baca file deposit: ' + err.message, 'error');
+      setStatus('❌ Gagal: ' + err.message, 'error');
       depositRows = [];
       cekSiapProses();
     }
   };
-
   if (/\.(xlsx|xls)$/i.test(f.name)) reader.readAsArrayBuffer(f);
   else reader.readAsText(f, 'UTF-8');
 });
 
-// ================== PROSES ==================
+/* Proses Audit */
 btnProses.addEventListener('click', () => {
   hasilFinal = Processor.prosesAudit(acuanUsers, depositRows);
-
   renderHasil();
   hasilSection.classList.remove('hidden');
 
   const { depoCount, freebetCount } = Processor.hitungRingkasan(hasilFinal);
-  setStatus(
-    `✅ Selesai! ${hasilFinal.length} user diproses — ${depoCount} punya DEPO, ${freebetCount} punya FREEBET.`,
-    'success'
-  );
+  setStatus(`✅ Selesai! ${hasilFinal.length} user — ${depoCount} DEPO, ${freebetCount} FREEBET`, 'success');
   btnDownload.disabled = false;
   btnCopy.disabled = false;
-
   hasilSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 
-// ================== RENDER ==================
 function renderHasil() {
   const { totalDepo, totalFreebet, depoCount, freebetCount } = Processor.hitungRingkasan(hasilFinal);
 
@@ -151,85 +178,403 @@ function renderHasil() {
   `).join('');
 }
 
-// ================== COPY KE CLIPBOARD (TSV) ==================
+/* Copy NDP */
 btnCopy.addEventListener('click', async () => {
   if (!hasilFinal.length) return;
-
-  const tsv = Processor.buildTSV(hasilFinal);
-
+  const tsv = hasilFinal.map(r => `${r.no}\t${r.registerDate || ''}\t${r.username}\t${r.depo}\t${r.freebet}`).join('\n');
   try {
     await navigator.clipboard.writeText(tsv);
-    setStatus('📋 Data berhasil di-copy! Tinggal paste (Ctrl+V) ke Google Sheets / Excel.', 'success');
+    setStatus('📋 Data di-copy! Paste ke Sheets.', 'success');
   } catch (err) {
-    // Fallback untuk browser lama / koneksi non-HTTPS
     const ta = document.createElement('textarea');
-    ta.value = tsv;
-    ta.style.position = 'fixed';
-    ta.style.left = '-9999px';
-    document.body.appendChild(ta);
-    ta.select();
-    try {
-      document.execCommand('copy');
-      setStatus('📋 Data berhasil di-copy (mode fallback). Tinggal paste ke Google Sheets.', 'success');
-    } catch (e2) {
-      setStatus('❌ Gagal copy: ' + e2.message, 'error');
-    }
+    ta.value = tsv; ta.style.position = 'fixed'; ta.style.left = '-9999px';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); setStatus('📋 Di-copy!', 'success'); } catch(e2) {}
     document.body.removeChild(ta);
   }
 });
 
-// ================== DOWNLOAD EXCEL ==================
+/* Download Excel NDP */
 btnDownload.addEventListener('click', () => {
   const wb = XLSX.utils.book_new();
-
   const data = hasilFinal.map(r => ({
-    'NO': r.no,
-    'Register Date': r.registerDate,
-    'USER ID': r.username,
-    'DEPO': r.depo,
-    'FREEBET': r.freebet,
+    'NO': r.no, 'Register Date': r.registerDate, 'USER ID': r.username,
+    'DEPO': r.depo, 'FREEBET': r.freebet,
   }));
   const ws = XLSX.utils.json_to_sheet(data);
   ws['!cols'] = [{ wch: 6 }, { wch: 22 }, { wch: 20 }, { wch: 14 }, { wch: 14 }];
-  XLSX.utils.book_append_sheet(wb, ws, 'KOLONI4D');
+  XLSX.utils.book_append_sheet(wb, ws, 'NDP');
 
   const { totalDepo, totalFreebet, depoCount, freebetCount } = Processor.hitungRingkasan(hasilFinal);
   const ringkasan = [
-    { 'Keterangan': 'Total User ID',                   'Nilai': hasilFinal.length },
-    { 'Keterangan': 'User Punya DEPO (QRIS HOKI)',     'Nilai': depoCount },
-    { 'Keterangan': 'Total DEPO',                      'Nilai': totalDepo },
-    { 'Keterangan': 'User Punya FREEBET (SCB)',        'Nilai': freebetCount },
-    { 'Keterangan': 'Total FREEBET',                   'Nilai': totalFreebet },
+    { 'Keterangan': 'Total User ID', 'Nilai': hasilFinal.length },
+    { 'Keterangan': 'User Punya DEPO', 'Nilai': depoCount },
+    { 'Keterangan': 'Total DEPO', 'Nilai': totalDepo },
+    { 'Keterangan': 'User Punya FREEBET', 'Nilai': freebetCount },
+    { 'Keterangan': 'Total FREEBET', 'Nilai': totalFreebet },
   ];
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ringkasan), 'Ringkasan');
 
   const tgl = new Date().toISOString().slice(0, 10);
-  XLSX.writeFile(wb, `audit_koloni4d_${tgl}.xlsx`);
-  setStatus('💾 File hasil didownload: audit_koloni4d_' + tgl + '.xlsx', 'success');
+  XLSX.writeFile(wb, `audit_ndp_${tgl}.xlsx`);
+  setStatus('💾 File didownload: audit_ndp_' + tgl + '.xlsx', 'success');
 });
 
-// ================== RESET ==================
+/* Reset NDP */
 btnReset.addEventListener('click', () => {
-  acuanUsers = [];
-  depositRows = [];
-  hasilFinal = [];
-
-  fileAcuan.value = '';
-  fileDeposit.value = '';
-
-  nameAcuan.textContent   = '';
-  nameDeposit.textContent = '';
-  infoAcuan.textContent   = '';
-  infoDeposit.textContent = '';
-
+  acuanUsers = []; depositRows = []; hasilFinal = [];
+  fileAcuan.value = ''; fileDeposit.value = '';
+  nameAcuan.textContent = ''; nameDeposit.textContent = '';
+  infoAcuan.textContent = ''; infoDeposit.textContent = '';
   boxAcuan.classList.remove('filled', 'error');
   boxDeposit.classList.remove('filled', 'error');
-
   hasilSection.classList.add('hidden');
   statusMsg.className = 'status-msg';
+  btnProses.disabled = true; btnReset.disabled = true;
+  btnDownload.disabled = true; btnCopy.disabled = true;
+});
 
-  btnProses.disabled = true;
-  btnReset.disabled = true;
-  btnDownload.disabled = true;
-  btnCopy.disabled = true;
+/* =========================================================
+   SCB — FILTER ONLY
+   ========================================================= */
+let rawRowsScb = [];
+let hasilScb = [];
+let hasilTampilScb = [];
+
+const fileScb     = document.getElementById('fileScb');
+const boxFileScb  = document.getElementById('boxFileScb');
+const nameScb     = document.getElementById('nameScb');
+const infoScb     = document.getElementById('infoScb');
+const btnProsesScb = document.getElementById('btnProsesScb');
+const btnResetScb  = document.getElementById('btnResetScb');
+const btnCopyScb   = document.getElementById('btnCopyScb');
+const btnDownloadScb = document.getElementById('btnDownloadScb');
+const statusMsgScb = document.getElementById('statusMsgScb');
+const hasilScbSection = document.getElementById('hasilScbSection');
+
+function setStatusScb(msg, type = 'info') {
+  statusMsgScb.textContent = msg;
+  statusMsgScb.className = 'status-msg show ' + type;
+}
+
+fileScb.addEventListener('change', (e) => {
+  const f = e.target.files[0];
+  if (!f) return;
+
+  nameScb.textContent = '⏳ Membaca...';
+  boxFileScb.classList.remove('filled', 'error');
+  infoScb.textContent = '';
+  setStatusScb('⏳ Membaca file...', 'info');
+
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    try {
+      let text = '';
+      if (typeof evt.target.result === 'string') {
+        text = evt.target.result;
+      } else {
+        const data = new Uint8Array(evt.target.result);
+        const wb = XLSX.read(data, { type: 'array' });
+        const sheet = wb.Sheets[wb.SheetNames[0]];
+        text = XLSX.utils.sheet_to_csv(sheet);
+      }
+      const rows = Parser.parseCSV(text);
+      const headers = rows[0].map(h => h.trim());
+      rawRowsScb = rows.slice(1).filter(r => r.some(c => c && c.trim()))
+        .map(r => { const o = {}; headers.forEach((h,i) => o[h] = r[i] || ''); return o; });
+
+      if (!rawRowsScb.length) throw new Error('File kosong');
+
+      nameScb.textContent = '✅ ' + f.name;
+      boxFileScb.classList.add('filled');
+      infoScb.textContent = `${rawRowsScb.length} baris terbaca`;
+      setStatusScb(`✅ File OK — ${rawRowsScb.length} baris`, 'success');
+      btnProsesScb.disabled = false;
+      btnResetScb.disabled = false;
+    } catch (err) {
+      nameScb.textContent = '❌ ' + f.name;
+      boxFileScb.classList.add('error');
+      infoScb.textContent = err.message;
+      setStatusScb('❌ Gagal: ' + err.message, 'error');
+      rawRowsScb = [];
+      btnProsesScb.disabled = true;
+      btnResetScb.disabled = true;
+    }
+  };
+  if (/\.(xlsx|xls)$/i.test(f.name)) reader.readAsArrayBuffer(f);
+  else reader.readAsText(f, 'UTF-8');
+});
+
+btnProsesScb.addEventListener('click', () => {
+  hasilScb = Processor.prosesSCB(rawRowsScb);
+  if (!hasilScb.length) {
+    setStatusScb('⚠️ Tidak ada data SCB ditemukan.', 'warning');
+    return;
+  }
+  renderHasilScb();
+  hasilScbSection.classList.remove('hidden');
+  btnCopyScb.disabled = false;
+  btnDownloadScb.disabled = false;
+  setStatusScb(`✅ Selesai! ${hasilScb.length} user SCB diproses.`, 'success');
+  hasilScbSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+function fmtRpScb(n) { return 'Rp ' + n.toLocaleString('id-ID'); }
+function tagClassScb(remark) {
+  if (remark === 'LUCKY SPIN') return 'lucky';
+  if (remark === 'FREEBET') return 'freebet';
+  return 'other';
+}
+
+function renderHasilScb() {
+  const totalNominal = hasilScb.reduce((a,b) => a + b.total, 0);
+  const luckyUsers   = hasilScb.filter(r => r.remark === 'LUCKY SPIN');
+  const freebetUsers = hasilScb.filter(r => r.remark === 'FREEBET');
+  const otherUsers   = hasilScb.filter(r => r.remark === 'LAINNYA');
+
+  document.getElementById('kpiTotalScb').textContent   = hasilScb.length.toLocaleString('id-ID');
+  document.getElementById('kpiNominalScb').textContent = fmtRpScb(totalNominal);
+  document.getElementById('kpiLuckyScb').textContent    = fmtRpScb(luckyUsers.reduce((a,b)=>a+b.total,0));
+  document.getElementById('kpiLuckySubScb').textContent = luckyUsers.length + ' user';
+  document.getElementById('kpiFreebetScb').textContent    = fmtRpScb(freebetUsers.reduce((a,b)=>a+b.total,0));
+  document.getElementById('kpiFreebetSubScb').textContent = freebetUsers.length + ' user';
+  document.getElementById('kpiOtherScb').textContent    = fmtRpScb(otherUsers.reduce((a,b)=>a+b.total,0));
+  document.getElementById('kpiOtherSubScb').textContent = otherUsers.length + ' user';
+
+  applyFilterScb();
+}
+
+function applyFilterScb() {
+  const showLucky   = document.getElementById('fLucky').checked;
+  const showFreebet = document.getElementById('fFreebet').checked;
+  const showOther   = document.getElementById('fOther').checked;
+
+  hasilTampilScb = hasilScb.filter(r => {
+    if (r.remark === 'LUCKY SPIN') return showLucky;
+    if (r.remark === 'FREEBET')    return showFreebet;
+    return showOther;
+  });
+
+  const tbody = document.querySelector('#tblHasilScb tbody');
+  if (!hasilTampilScb.length) {
+    tbody.innerHTML = `<tr><td colspan="4" class="empty-msg">Tidak ada data yang cocok.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = hasilTampilScb.map((r, i) => {
+    const remarkDisplay = r.remark.split(' / ').map(rm => {
+      return `<span class="tag ${tagClassScb(rm)}">${rm}</span>`;
+    }).join(' ');
+    return `
+      <tr>
+        <td>${i + 1}</td>
+        <td>${r.username}</td>
+        <td class="num">${r.total.toLocaleString('id-ID')}</td>
+        <td>${remarkDisplay}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+document.getElementById('fLucky').addEventListener('change', applyFilterScb);
+document.getElementById('fFreebet').addEventListener('change', applyFilterScb);
+document.getElementById('fOther').addEventListener('change', applyFilterScb);
+
+btnCopyScb.addEventListener('click', async () => {
+  if (!hasilTampilScb.length) return;
+   const tsv = hasilTampilScb.map(r => `${r.username}\t${r.total}`).join('\n');
+  try {
+    await navigator.clipboard.writeText(tsv);
+    setStatusScb('📋 Data di-copy! Paste ke Sheets.', 'success');
+  } catch (err) {
+    const ta = document.createElement('textarea');
+    ta.value = tsv; ta.style.position = 'fixed'; ta.style.left = '-9999px';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); setStatusScb('📋 Di-copy!', 'success'); } catch(e2) {}
+    document.body.removeChild(ta);
+  }
+});
+
+btnDownloadScb.addEventListener('click', () => {
+  if (!hasilTampilScb.length) return;
+  const wb = XLSX.utils.book_new();
+  const data = hasilTampilScb.map((r, i) => ({
+    'NO': i + 1, 'USER ID': r.username, 'REMARK': r.remark, 'TOTAL': r.total,
+  }));
+  const ws = XLSX.utils.json_to_sheet(data);
+  ws['!cols'] = [{ wch: 6 }, { wch: 25 }, { wch: 20 }, { wch: 14 }];
+  XLSX.utils.book_append_sheet(wb, ws, 'SCB Filter');
+
+  const tgl = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `scb_filter_${tgl}.xlsx`);
+  setStatusScb('💾 File didownload.', 'success');
+});
+
+btnResetScb.addEventListener('click', () => {
+  rawRowsScb = []; hasilScb = []; hasilTampilScb = [];
+  fileScb.value = '';
+  nameScb.textContent = ''; infoScb.textContent = '';
+  boxFileScb.classList.remove('filled', 'error');
+  hasilScbSection.classList.add('hidden');
+  statusMsgScb.className = 'status-msg';
+  btnProsesScb.disabled = true;
+  btnResetScb.disabled = true;
+  btnCopyScb.disabled = true;
+  btnDownloadScb.disabled = true;
+  document.getElementById('fLucky').checked = true;
+  document.getElementById('fFreebet').checked = true;
+  document.getElementById('fOther').checked = true;
+});
+
+/* =========================================================
+   WD — WITHDRAW QRIS
+   ========================================================= */
+let rawRowsWd = [];
+let hasilWd = [];
+
+const fileWd         = document.getElementById('fileWd');
+const boxFileWd      = document.getElementById('boxFileWd');
+const nameWd         = document.getElementById('nameWd');
+const infoWd         = document.getElementById('infoWd');
+const btnProsesWd    = document.getElementById('btnProsesWd');
+const btnResetWd     = document.getElementById('btnResetWd');
+const btnCopyWd      = document.getElementById('btnCopyWd');
+const btnDownloadWd  = document.getElementById('btnDownloadWd');
+const statusMsgWd    = document.getElementById('statusMsgWd');
+const hasilWdSection = document.getElementById('hasilWdSection');
+
+function setStatusWd(msg, type = 'info') {
+  statusMsgWd.textContent = msg;
+  statusMsgWd.className = 'status-msg show ' + type;
+}
+
+fileWd.addEventListener('change', (e) => {
+  const f = e.target.files[0];
+  if (!f) return;
+
+  nameWd.textContent = '⏳ Membaca...';
+  boxFileWd.classList.remove('filled', 'error');
+  infoWd.textContent = '';
+  setStatusWd('⏳ Membaca file...', 'info');
+
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    try {
+      let text = '';
+      if (typeof evt.target.result === 'string') {
+        text = evt.target.result;
+      } else {
+        const data = new Uint8Array(evt.target.result);
+        const wb = XLSX.read(data, { type: 'array' });
+        const sheet = wb.Sheets[wb.SheetNames[0]];
+        text = XLSX.utils.sheet_to_csv(sheet);
+      }
+      const rows = Parser.parseCSV(text);
+      const headers = rows[0].map(h => h.trim());
+      rawRowsWd = rows.slice(1).filter(r => r.some(c => c && c.trim()))
+        .map(r => { const o = {}; headers.forEach((h,i) => o[h] = r[i] || ''); return o; });
+
+      if (!rawRowsWd.length) throw new Error('File kosong');
+
+      nameWd.textContent = '✅ ' + f.name;
+      boxFileWd.classList.add('filled');
+      infoWd.textContent = `${rawRowsWd.length} baris terbaca`;
+      setStatusWd(`✅ File OK — ${rawRowsWd.length} baris`, 'success');
+      btnProsesWd.disabled = false;
+      btnResetWd.disabled = false;
+    } catch (err) {
+      nameWd.textContent = '❌ ' + f.name;
+      boxFileWd.classList.add('error');
+      infoWd.textContent = err.message;
+      setStatusWd('❌ Gagal: ' + err.message, 'error');
+      rawRowsWd = [];
+      btnProsesWd.disabled = true;
+      btnResetWd.disabled = true;
+    }
+  };
+  if (/\.(xlsx|xls)$/i.test(f.name)) reader.readAsArrayBuffer(f);
+  else reader.readAsText(f, 'UTF-8');
+});
+
+btnProsesWd.addEventListener('click', () => {
+  hasilWd = Processor.prosesWd(rawRowsWd);
+  if (!hasilWd.length) {
+    setStatusWd('⚠️ Tidak ada data ditemukan.', 'warning');
+    return;
+  }
+  renderHasilWd();
+  hasilWdSection.classList.remove('hidden');
+  btnCopyWd.disabled = false;
+  btnDownloadWd.disabled = false;
+  setStatusWd(`✅ Selesai! ${hasilWd.length} baris withdraw diproses (urutan terbalik).`, 'success');
+  hasilWdSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+function fmtRpWd(n) { return 'Rp ' + n.toLocaleString('id-ID'); }
+
+function renderHasilWd() {
+  const totalNominal = hasilWd.reduce((a, b) => a + b.total, 0);
+  const totalAdm     = hasilWd.reduce((a, b) => a + b.adm, 0);
+
+  document.getElementById('kpiTotalWd').textContent   = hasilWd.length.toLocaleString('id-ID');
+  document.getElementById('kpiNominalWd').textContent = fmtRpWd(totalNominal);
+  document.getElementById('kpiAdmWd').textContent     = fmtRpWd(totalAdm);
+
+  const tbody = document.querySelector('#tblHasilWd tbody');
+  tbody.innerHTML = hasilWd.map(r => `
+    <tr>
+      <td>${r.no}</td>
+      <td>${r.toBank}</td>
+      <td>${r.username}</td>
+      <td class="num" style="color:#dc2626;font-weight:600;">${r.total.toLocaleString('id-ID')}</td>
+      <td class="num" style="color:#dc2626;font-weight:600;">${r.adm.toLocaleString('id-ID')}</td>
+    </tr>
+  `).join('');
+}
+
+btnCopyWd.addEventListener('click', async () => {
+  if (!hasilWd.length) return;
+  const tsv = hasilWd.map(r => `${r.toBank}\t${r.username}\t${r.total}\t${r.adm}`).join('\n');
+  try {
+    await navigator.clipboard.writeText(tsv);
+    setStatusWd('📋 Data di-copy! Paste ke Sheets.', 'success');
+  } catch (err) {
+    const ta = document.createElement('textarea');
+    ta.value = tsv; ta.style.position = 'fixed'; ta.style.left = '-9999px';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); setStatusWd('📋 Di-copy!', 'success'); } catch(e2) {}
+    document.body.removeChild(ta);
+  }
+});
+
+btnDownloadWd.addEventListener('click', () => {
+  if (!hasilWd.length) return;
+  const wb = XLSX.utils.book_new();
+  const data = hasilWd.map(r => ({
+    'NO': r.no,
+    'TOBANK': r.toBank,
+    'USERNAME': r.username,
+    'TOTAL': r.total,
+    'ADM': r.adm
+  }));
+  const ws = XLSX.utils.json_to_sheet(data);
+  ws['!cols'] = [{ wch: 6 }, { wch: 35 }, { wch: 22 }, { wch: 14 }, { wch: 12 }];
+  XLSX.utils.book_append_sheet(wb, ws, 'Withdraw QRIS');
+
+  const tgl = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `withdraw_qris_${tgl}.xlsx`);
+  setStatusWd('💾 File didownload.', 'success');
+});
+
+btnResetWd.addEventListener('click', () => {
+  rawRowsWd = []; hasilWd = [];
+  fileWd.value = '';
+  nameWd.textContent = ''; infoWd.textContent = '';
+  boxFileWd.classList.remove('filled', 'error');
+  hasilWdSection.classList.add('hidden');
+  statusMsgWd.className = 'status-msg';
+  btnProsesWd.disabled = true;
+  btnResetWd.disabled = true;
+  btnCopyWd.disabled = true;
+  btnDownloadWd.disabled = true;
 });
