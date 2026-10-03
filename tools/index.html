@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NDP Tools — Audit & SCB Filter</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<link rel="icon" type="image/webp" href="assets/fav-tools.webp">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app">
+
+  <!-- ==================== SIDEBAR ==================== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-logo">
+      <img src="assets/fav-tools.webp" alt="Logo">
+      <span class="shine"></span>
+      </div>
+      <div class="brand-text">
+        <div class="brand-title">PROJECT TOOLS</div>
+        <div class="brand-sub">Audit & Filter</div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <a class="nav-item active" data-page="ndp">
+        <span class="nav-icon">📊</span>
+        <span class="nav-label">NDP</span>
+        <span class="nav-sub">Audit New Deposit</span>
+      </a>
+      <a class="nav-item" data-page="scb">
+        <span class="nav-icon">🎰</span>
+        <span class="nav-label">SCB</span>
+        <span class="nav-sub">Filter SCB Only</span>
+      </a>
+      <a class="nav-item" data-page="wd">
+       <span class="nav-icon">💸</span>
+       <span class="nav-label">WD</span>
+       <span class="nav-sub">Withdraw QRIS</span>
+     </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-avatar">
+          <img src="assets/Brand.webp" alt="Avatar">
+          <span class="shine"></span>
+          </div>
+        <div class="user-info">
+          <div class="user-name">Tools</div>
+          <div class="user-role">By: KangPangkas</div>
+        </div>
+  </aside>
+
+  <!-- ==================== MAIN ==================== -->
+  <main class="main">
+
+    <!-- ========== PAGE: NDP (Audit Deposit) ========== -->
+    <section class="page active" id="page-ndp">
+      <div class="topbar">
+        <div>
+          <div class="page-eyebrow">PANEL TOOLS</div>
+          <h1 class="page-title" id="titleNdp">📊 Audit New Deposit</h1>
+          <p class="page-sub">Isi otomatis kolom DEPOSIT & FREEBET dari file TableData + Deposit Harian</p>
+        </div>
+      </div>
+
+      <!-- Upload -->
+      <div class="panel">
+        <h2>1️⃣ Upload File</h2>
+        <div class="upload-grid">
+          <label class="upload-box" id="boxAcuan">
+            <input type="file" id="fileAcuan" accept=".xlsx,.xls,.csv,.txt">
+            <div class="icon">📋</div>
+            <div class="label">File TableData (User Baru)</div>
+            <div class="hint">Ambil: Username + Tanggal Daftar</div>
+            <div class="filename" id="nameAcuan"></div>
+            <div class="info" id="infoAcuan"></div>
+          </label>
+
+          <label class="upload-box" id="boxDeposit">
+            <input type="file" id="fileDeposit" accept=".csv,.xlsx,.xls,.txt">
+            <div class="icon">💾</div>
+            <div class="label">File Deposit Harian</div>
+            <div class="hint">CSV dari sistem — kolom UserName, ToBank, Total</div>
+            <div class="filename" id="nameDeposit"></div>
+            <div class="info" id="infoDeposit"></div>
+          </label>
+        </div>
+
+        <div class="actions">
+          <button class="btn-primary" id="btnProses" disabled>🚀 Proses Audit</button>
+          <button class="btn-secondary" id="btnReset" disabled>↺ Reset</button>
+          <button class="btn-copy" id="btnCopy" disabled>📋 Copy ke Clipboard</button>
+          <button class="btn-success" id="btnDownload" disabled>⬇️ Download Hasil Excel</button>
+        </div>
+
+        <div class="status-msg" id="statusMsg"></div>
+      </div>
+
+      <!-- Hasil -->
+      <section id="hasilSection" class="hidden">
+        <div class="kpi-grid">
+          <div class="kpi-card match">
+            <div class="kpi-label">Total User ID</div>
+            <div class="kpi-value" id="kpiTotal">0</div>
+            <div class="kpi-sub">baris user</div>
+          </div>
+          <div class="kpi-card qris">
+            <div class="kpi-label">User Punya DEPO</div>
+            <div class="kpi-value" id="kpiQrisCount">0</div>
+            <div class="kpi-sub">user</div>
+          </div>
+          <div class="kpi-card qris">
+            <div class="kpi-label">Total New Deposit</div>
+            <div class="kpi-value" id="kpiDepoRp">Rp 0</div>
+            <div class="kpi-sub">semua user</div>
+          </div>
+          <div class="kpi-card scb">
+            <div class="kpi-label">Total ID FREEBET</div>
+            <div class="kpi-value" id="kpiScbCount">0</div>
+            <div class="kpi-sub">user</div>
+          </div>
+          <div class="kpi-card scb">
+            <div class="kpi-label">Total Saldo FREEBET</div>
+            <div class="kpi-value" id="kpiFreebetRp">Rp 0</div>
+            <div class="kpi-sub">semua user</div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table id="tblHasil">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Register Date</th>
+                <th>USER ID</th>
+                <th>DEPO</th>
+                <th>FREEBET</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <!-- ========== PAGE: SCB (Filter SCB Only) ========== -->
+    <section class="page" id="page-scb">
+      <div class="topbar">
+        <div>
+          <div class="page-eyebrow">PANEL TOOLS</div>
+          <h1 class="page-title">🎰 SCB Filter Only</h1>
+          <p class="page-sub">Filter SCB SPESIAL COSTUMER BONUS — normalisasi remark LUCKY SPIN / FREEBET otomatis</p>
+        </div>
+      </div>
+
+      <!-- Upload -->
+      <div class="panel">
+        <h2>1️⃣ Upload File Deposit</h2>
+        <label class="upload-box" id="boxFileScb">
+          <input type="file" id="fileScb" accept=".csv,.xlsx,.xls,.txt">
+          <div class="icon">📋</div>
+          <div class="label">File Deposit (CSV / Excel)</div>
+          <div class="hint">Kolom: UserName, ToBank, Total, Remark</div>
+          <div class="filename" id="nameScb"></div>
+          <div class="info" id="infoScb"></div>
+        </label>
+
+        <div class="actions">
+          <button class="btn-primary" id="btnProsesScb" disabled>🚀 Proses Filter SCB</button>
+          <button class="btn-secondary" id="btnResetScb" disabled>↺ Reset</button>
+          <button class="btn-copy" id="btnCopyScb" disabled>📋 Copy ke Clipboard</button>
+          <button class="btn-success" id="btnDownloadScb" disabled>⬇️ Download Excel</button>
+        </div>
+
+        <div class="status-msg" id="statusMsgScb"></div>
+      </div>
+
+      <!-- Hasil SCB -->
+      <section id="hasilScbSection" class="hidden">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">Total User ID</div>
+            <div class="kpi-value" id="kpiTotalScb">0</div>
+            <div class="kpi-sub">user SCB</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Total Nominal SCB</div>
+            <div class="kpi-value" id="kpiNominalScb">Rp 0</div>
+            <div class="kpi-sub">semua user</div>
+          </div>
+          <div class="kpi-card lucky">
+            <div class="kpi-label">🎰 LUCKY SPIN</div>
+            <div class="kpi-value" id="kpiLuckyScb">0</div>
+            <div class="kpi-sub" id="kpiLuckySubScb">0 user</div>
+          </div>
+          <div class="kpi-card freebet">
+            <div class="kpi-label">🎁 FREEBET</div>
+            <div class="kpi-value" id="kpiFreebetScb">0</div>
+            <div class="kpi-sub" id="kpiFreebetSubScb">0 user</div>
+          </div>
+          <div class="kpi-card other">
+            <div class="kpi-label">📦 LAINNYA</div>
+            <div class="kpi-value" id="kpiOtherScb">0</div>
+            <div class="kpi-sub" id="kpiOtherSubScb">0 user</div>
+          </div>
+        </div>
+
+        <div class="filter-bar">
+          <strong style="font-size:0.9rem;">Filter Remark:</strong>
+          <label>
+            <input type="checkbox" id="fLucky" checked>
+            <span class="filter-badge lucky">LUCKY SPIN</span>
+          </label>
+          <label>
+            <input type="checkbox" id="fFreebet" checked>
+            <span class="filter-badge freebet">FREEBET</span>
+          </label>
+          <label>
+            <input type="checkbox" id="fOther" checked>
+            <span class="filter-badge other">LAINNYA</span>
+          </label>
+        </div>
+
+        <div class="table-wrap">
+          <table id="tblHasilScb">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>USER ID</th>
+                <th class="num">TOTAL</th>
+                <th>REMARK</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+    
+    <!-- ========== PAGE: WD (Withdraw QRIS) ========== -->
+<section class="page" id="page-wd">
+  <div class="topbar">
+    <div>
+      <div class="page-eyebrow">PANEL TOOLS</div>
+      <h1 class="page-title">💸 Withdraw QRIS</h1>
+      <p class="page-sub">Rekap withdraw QRIS — total minus, adm otomatis, urutan terbalik</p>
+    </div>
+  </div>
+
+  <!-- Upload -->
+  <div class="panel">
+    <h2>1️⃣ Upload File Withdraw</h2>
+    <label class="upload-box" id="boxFileWd">
+      <input type="file" id="fileWd" accept=".csv,.xlsx,.xls,.txt">
+      <div class="icon">📋</div>
+      <div class="label">File Withdraw (CSV / Excel)</div>
+      <div class="hint">Kolom: UserName, ToBank, Total</div>
+      <div class="filename" id="nameWd"></div>
+      <div class="info" id="infoWd"></div>
+    </label>
+
+    <div class="actions">
+      <button class="btn-primary" id="btnProsesWd" disabled>🚀 Proses Withdraw</button>
+      <button class="btn-secondary" id="btnResetWd" disabled>↺ Reset</button>
+      <button class="btn-copy" id="btnCopyWd" disabled>📋 Copy ke Clipboard</button>
+      <button class="btn-success" id="btnDownloadWd" disabled>⬇️ Download Excel</button>
+    </div>
+
+    <div class="status-msg" id="statusMsgWd"></div>
+  </div>
+
+  <!-- Hasil WD -->
+  <section id="hasilWdSection" class="hidden">
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Total Withdraw</div>
+        <div class="kpi-value" id="kpiTotalWd">0</div>
+        <div class="kpi-sub">baris</div>
+      </div>
+      <div class="kpi-card qris">
+        <div class="kpi-label">Total Nominal</div>
+        <div class="kpi-value" id="kpiNominalWd">Rp 0</div>
+        <div class="kpi-sub">semua user</div>
+      </div>
+      <div class="kpi-card scb">
+        <div class="kpi-label">Total Adm</div>
+        <div class="kpi-value" id="kpiAdmWd">Rp 0</div>
+        <div class="kpi-sub">otomatis -1600/baris</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table id="tblHasilWd">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>TOBANK</th>
+            <th>USERNAME</th>
+            <th class="num">TOTAL</th>
+            <th class="num">ADM</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+</section>
+
+  </main>
+</div>
+
+<script src="js/parser.js"></script>
+<script src="js/processor.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
