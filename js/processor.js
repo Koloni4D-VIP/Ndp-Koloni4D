@@ -62,9 +62,6 @@ function prosesAudit(acuanUsers, depositRows) {
   }));
 }
 
-/**
- * Hitung ringkasan dari hasilFinal.
- */
 function hitungRingkasan(hasilFinal) {
   const totalDepo    = hasilFinal.reduce((a, b) => a + b.depo, 0);
   const totalFreebet = hasilFinal.reduce((a, b) => a + b.freebet, 0);
@@ -73,12 +70,8 @@ function hitungRingkasan(hasilFinal) {
   return { totalDepo, totalFreebet, depoCount, freebetCount };
 }
 
-/**
- * Format TSV untuk copy ke clipboard (Google Sheets / Excel).
- */
 function buildTSV(hasilFinal) {
-  const header = ['NO', 'Register Date', 'USER ID', 'DEPO', 'FREEBET'];
-  const lines = [header.join('\t')];
+  const lines = [];
 
   hasilFinal.forEach(r => {
     lines.push([
@@ -90,7 +83,9 @@ function buildTSV(hasilFinal) {
     ].join('\t'));
   });
 
-  // Ringkasan di bawah
+  return lines.join('\n');
+}
+
   const { totalDepo, totalFreebet, depoCount, freebetCount } = hitungRingkasan(hasilFinal);
   lines.push('');
   lines.push(['Keterangan', 'Nilai'].join('\t'));
