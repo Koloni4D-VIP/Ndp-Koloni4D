@@ -14,7 +14,7 @@ function parseAcuan(text) {
   return rows.slice(1)
     .filter(r => r[idxUser] && r[idxUser].trim())
     .map(r => ({
-      username: String(r[idxUser] || '').trim().toLowerCase(),
+      username: Processor.bersihkanUsername(r[idxUser]),   
       registerDate: idxDate >= 0 ? String(r[idxDate] || '').trim() : ''
     }));
 }
@@ -23,7 +23,11 @@ function parseDeposit(text) {
   const rows = parseCSV(text);
   if (!rows.length) return [];
 
-  const headers = rows[0].map(h => h.trim());
+  // Normalisasi header: lowercase, buang spasi/underscore
+  const headers = rows[0].map(h =>
+    String(h).trim().toLowerCase().replace(/[\s_]+/g, '')
+  );
+
   return rows.slice(1)
     .filter(r => r.some(c => c && c.trim()))
     .map(r => {
