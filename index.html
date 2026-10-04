@@ -40,6 +40,11 @@
        <span class="nav-label">WD</span>
        <span class="nav-sub">Withdraw QRIS</span>
      </a>
+     <a class="nav-item" data-page="qris">
+      <span class="nav-icon">💰</span>
+      <span class="nav-label">DP QRIS</span>
+     <span class="nav-sub">Filter QRIS HOKI</span>
+     </a>
     </nav>
 
     <div class="sidebar-footer">
@@ -302,6 +307,73 @@
             <th>USERNAME</th>
             <th class="num">TOTAL</th>
             <th class="num">ADM</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+</section>
+
+<!-- ========== PAGE: QRIS (Filter QRIS HOKI) ========== -->
+<section class="page" id="page-qris">
+  <div class="topbar">
+    <div>
+      <div class="page-eyebrow">PANEL TOOLS</div>
+      <h1 class="page-title">🔥 Filter QRIS HOKI</h1>
+      <p class="page-sub">Filter transaksi QRIS HOKI — rekap per user dengan total nominal</p>
+    </div>
+  </div>
+
+  <!-- Upload -->
+  <div class="panel">
+    <h2>1️⃣ Upload File Deposit</h2>
+    <label class="upload-box" id="boxFileQris">
+      <input type="file" id="fileQris" accept=".csv,.xlsx,.xls,.txt">
+      <div class="icon">📋</div>
+      <div class="label">File Deposit (CSV / Excel)</div>
+      <div class="hint">Kolom: UserName, ToBank, Total, Remark</div>
+      <div class="filename" id="nameQris"></div>
+      <div class="info" id="infoQris"></div>
+    </label>
+
+    <div class="actions">
+      <button class="btn-primary" id="btnProsesQris" disabled>🚀 Proses Filter QRIS</button>
+      <button class="btn-secondary" id="btnResetQris" disabled>↺ Reset</button>
+      <button class="btn-copy" id="btnCopyQris" disabled>📋 Copy ke Clipboard</button>
+      <button class="btn-success" id="btnDownloadQris" disabled>⬇️ Download Excel</button>
+    </div>
+
+    <div class="status-msg" id="statusMsgQris"></div>
+  </div>
+
+  <!-- Hasil QRIS -->
+  <section id="hasilQrisSection" class="hidden">
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Total User ID</div>
+        <div class="kpi-value" id="kpiTotalQris">0</div>
+        <div class="kpi-sub">user QRIS</div>
+      </div>
+      <div class="kpi-card qris">
+        <div class="kpi-label">Total Nominal QRIS</div>
+        <div class="kpi-value" id="kpiNominalQris">Rp 0</div>
+        <div class="kpi-sub">semua user</div>
+      </div>
+      <div class="kpi-card lucky">
+        <div class="kpi-label">Rata-rata / User</div>
+        <div class="kpi-value" id="kpiAvgQris">Rp 0</div>
+        <div class="kpi-sub">per user</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table id="tblHasilQris">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>USER ID</th>
+            <th class="num">TOTAL</th>
           </tr>
         </thead>
         <tbody></tbody>

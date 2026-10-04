@@ -44,10 +44,7 @@ function prosesAudit(acuanUsers, depositRows) {
     if (kat === 'QRIS_HOKI') {
       mapDepo.set(user, (mapDepo.get(user) || 0) + nominal);
     } else if (kat === 'SCB') {
-      const remark = normalizeRemark(row['remark'] || row['Remark'] || '');
-      if (remark === 'FREEBET') {
-        mapFreebet.set(user, (mapFreebet.get(user) || 0) + nominal);
-      }
+      mapFreebet.set(user, (mapFreebet.get(user) || 0) + nominal);
     }
   });
 
@@ -59,7 +56,6 @@ function prosesAudit(acuanUsers, depositRows) {
     freebet: mapFreebet.get(u.username) || 0,
   }));
 }
-
 
 function hitungRingkasan(hasilFinal) {
   const totalDepo    = hasilFinal.reduce((a, b) => a + b.depo, 0);
@@ -141,7 +137,7 @@ function prosesSCB(rows) {
 }
 
 /* ---------- WITHDRAW QRIS ---------- */
-const ADM_DEFAULT = -1600;   // 👈 ubah di sini kalau nilai adm berubah
+const ADM_DEFAULT = -1600;   
 
 function prosesWd(rows) {
   const hasil = rows.map(row => {
@@ -170,6 +166,32 @@ function prosesWd(rows) {
   return hasil.map((item, i) => ({ no: i + 1, ...item }));
 }
 
+/* ---------- QRIS HOKI FILTER ---------- */
+function prosesQris(rows) {
+  const hasil = [];
+
+  rows.forEach(row => {
+    const toBankRaw = String(row['ToBank'] || row['tobank'] || '');
+    const toBank = toBankRaw.toUpperCase().replace(/\s+/g, ' ').trim();
+    if (!toBank.includes('QRIS HOKI')) return;
+
+    const user = bersihkanUsername(
+      row['UserName'] || row['Username'] || row['username'] || ''
+    );
+    if (!user) return;
+
+    const nominal = parseTotal(row['Total'] || row['total'] || 0);
+
+    hasil.push({ username: user, total: nominal });
+  });
+
+  hasil.reverse();
+
+  return hasil.map((item, i) => ({ no: i + 1, ...item }));
+}
+
+
+
 window.Processor = {
   bersihkanUsername,
   klasifikasiToBank,
@@ -178,5 +200,6 @@ window.Processor = {
   hitungRingkasan,
   normalizeRemark,
   prosesSCB,
-  prosesWd,          
+  prosesWd,   
+  prosesQris,         
 };

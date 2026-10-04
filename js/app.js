@@ -125,6 +125,9 @@ fileDeposit.addEventListener('change', (e) => {
         text = XLSX.utils.sheet_to_csv(sheet);
       }
       depositRows = Parser.parseDeposit(text);
+      console.log('HEADER:', Object.keys(depositRows[0] || {}));
+      console.log('ROW PERTAMA:', depositRows[0]);
+      console.log('ACUAN PERTAMA:', acuanUsers[0]);
       if (!depositRows.length) throw new Error('File deposit kosong');
       nameDeposit.textContent = '✅ ' + f.name;
       boxDeposit.classList.add('filled');
@@ -577,4 +580,154 @@ btnResetWd.addEventListener('click', () => {
   btnResetWd.disabled = true;
   btnCopyWd.disabled = true;
   btnDownloadWd.disabled = true;
+});
+
+/* =========================================================
+   QRIS — FILTER QRIS HOKI
+   ========================================================= */
+let rawRowsQris = [];
+let hasilQris = [];
+
+const fileQris        = document.getElementById('fileQris');
+const boxFileQris     = document.getElementById('boxFileQris');
+const nameQris        = document.getElementById('nameQris');
+const infoQris        = document.getElementById('infoQris');
+const btnProsesQris   = document.getElementById('btnProsesQris');
+const btnResetQris    = document.getElementById('btnResetQris');
+const btnCopyQris     = document.getElementById('btnCopyQris');
+const btnDownloadQris = document.getElementById('btnDownloadQris');
+const statusMsgQris   = document.getElementById('statusMsgQris');
+const hasilQrisSection = document.getElementById('hasilQrisSection');
+
+function setStatusQris(msg, type = 'info') {
+  statusMsgQris.textContent = msg;
+  statusMsgQris.className = 'status-msg show ' + type;
+}
+
+fileQris.addEventListener('change', (e) => {
+  const f = e.target.files[0];
+  if (!f) return;
+
+  nameQris.textContent = '⏳ Membaca...';
+  boxFileQris.classList.remove('filled', 'error');
+  infoQris.textContent = '';
+  setStatusQris('⏳ Membaca file...', 'info');
+
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    try {
+      let text = '';
+      if (typeof evt.target.result === 'string') {
+        text = evt.target.result;
+      } else {
+        const data = new Uint8Array(evt.target.result);
+        const wb = XLSX.read(data, { type: 'array' });
+        const sheet = wb.Sheets[wb.SheetNames[0]];
+        text = XLSX.utils.sheet_to_csv(sheet);
+      }
+      const rows = Parser.parseCSV(text);
+      const headers = rows[0].map(h => h.trim());
+      rawRowsQris = rows.slice(1).filter(r => r.some(c => c && c.trim()))
+        .map(r => { const o = {}; headers.forEach((h,i) => o[h] = r[i] || ''); return o; });
+
+      if (!rawRowsQris.length) throw new Error('File kosong');
+
+      nameQris.textContent = '✅ ' + f.name;
+      boxFileQris.classList.add('filled');
+      infoQris.textContent = `${rawRowsQris.length} baris terbaca`;
+      setStatusQris(`✅ File OK — ${rawRowsQris.length} baris`, 'success');
+      btnProsesQris.disabled = false;
+      btnResetQris.disabled = false;
+    } catch (err) {
+      nameQris.textContent = '❌ ' + f.name;
+      boxFileQris.classList.add('error');
+      infoQris.textContent = err.message;
+      setStatusQris('❌ Gagal: ' + err.message, 'error');
+      rawRowsQris = [];
+      btnProsesQris.disabled = true;
+      btnResetQris.disabled = true;
+    }
+  };
+  if (/\.(xlsx|xls)$/i.test(f.name)) reader.readAsArrayBuffer(f);
+  else reader.readAsText(f, 'UTF-8');
+});
+
+btnProsesQris.addEventListener('click', () => {
+  hasilQris = Processor.prosesQris(rawRowsQris);
+  if (!hasilQris.length) {
+    setStatusQris('⚠️ Tidak ada data QRIS HOKI ditemukan.', 'warning');
+    return;
+  }
+  renderHasilQris();
+  hasilQrisSection.classList.remove('hidden');
+  btnCopyQris.disabled = false;
+  btnDownloadQris.disabled = false;
+  setStatusQris(`✅ Selesai! ${hasilQris.length} user QRIS HOKI diproses.`, 'success');
+  hasilQrisSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+function fmtRpQris(n) { return 'Rp ' + n.toLocaleString('id-ID'); }
+
+function renderHasilQris() {
+  const totalNominal = hasilQris.reduce((a,b) => a + b.total, 0);
+  const avg = hasilQris.length ? Math.round(totalNominal / hasilQris.length) : 0;
+
+  document.getElementById('kpiTotalQris').textContent   = hasilQris.length.toLocaleString('id-ID');
+  document.getElementById('kpiNominalQris').textContent = fmtRpQris(totalNominal);
+  document.getElementById('kpiAvgQris').textContent     = fmtRpQris(avg);
+
+  const tbody = document.querySelector('#tblHasilQris tbody');
+  tbody.innerHTML = hasilQris.map((r, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td>${r.username}</td>
+      <td class="num">${r.total.toLocaleString('id-ID')}</td>
+    </tr>
+  `).join('');
+}
+
+
+btnCopyQris.addEventListener('click', async () => {
+  if (!hasilQris.length) return;
+
+  const tsv = hasilQris.map(r => `${r.username}\t${r.total}`).join('\n');
+
+  try {
+    await navigator.clipboard.writeText(tsv);
+    setStatusQris('📋 Data di-copy! Paste ke Sheets.', 'success');
+  } catch (err) {
+    const ta = document.createElement('textarea');
+    ta.value = tsv; ta.style.position = 'fixed'; ta.style.left = '-9999px';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); setStatusQris('📋 Di-copy!', 'success'); } catch(e2) {}
+    document.body.removeChild(ta);
+  }
+});
+
+btnDownloadQris.addEventListener('click', () => {
+  if (!hasilQris.length) return;
+  const wb = XLSX.utils.book_new();
+  const data = hasilQris.map((r, i) => ({
+    'NO': i + 1, 'USER ID': r.username, 'TOTAL': r.total,
+  }));
+  const ws = XLSX.utils.json_to_sheet(data);
+  ws['!cols'] = [{ wch: 6 }, { wch: 25 }, { wch: 14 }];
+  XLSX.utils.book_append_sheet(wb, ws, 'QRIS HOKI');
+
+  const tgl = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `qris_hoki_filter_${tgl}.xlsx`);
+  setStatusQris('💾 File didownload.', 'success');
+});
+
+btnResetQris.addEventListener('click', () => {
+  rawRowsQris = []; hasilQris = [];
+  fileQris.value = '';
+  nameQris.textContent = ''; infoQris.textContent = '';
+  boxFileQris.classList.remove('filled', 'error');
+  hasilQrisSection.classList.add('hidden');
+  statusMsgQris.className = 'status-msg';
+  btnProsesQris.disabled = true;
+  btnResetQris.disabled = true;
+  btnCopyQris.disabled = true;
+  btnDownloadQris.disabled = true;
 });

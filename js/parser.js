@@ -38,9 +38,11 @@ function parseDeposit(text) {
 }
 
 function parseCSV(text) {
-  if (text.startsWith('sep=')) {
-    text = text.substring(text.indexOf('\n') + 1);
-  }
+  text = text.replace(/^\uFEFF/, '');
+
+  text = text.split('\n')
+    .filter(line => !line.trim().startsWith('sep='))
+    .join('\n');
 
   const rows = [];
   let current = [];
