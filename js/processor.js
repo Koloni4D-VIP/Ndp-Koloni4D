@@ -32,19 +32,22 @@ function prosesAudit(acuanUsers, depositRows) {
 
   depositRows.forEach((row) => {
     const user = bersihkanUsername(
-      row['UserName'] || row['Username'] || row['username'] || ''
+      row['username'] || row['userid'] || row['user'] || ''
     );
     if (!user) return;
 
-    const kat = klasifikasiToBank(row['ToBank'] || row['tobank'] || '');
+    const kat = klasifikasiToBank(row['tobank'] || row['bank'] || '');
     if (!kat) return;
 
-    const nominal = parseTotal(row['Total'] || row['total'] || 0);
+    const nominal = parseTotal(row['total'] || row['nominal'] || 0);
 
     if (kat === 'QRIS_HOKI') {
       mapDepo.set(user, (mapDepo.get(user) || 0) + nominal);
     } else if (kat === 'SCB') {
-      mapFreebet.set(user, (mapFreebet.get(user) || 0) + nominal);
+      const remark = normalizeRemark(row['remark'] || row['Remark'] || '');
+      if (remark === 'FREEBET') {
+        mapFreebet.set(user, (mapFreebet.get(user) || 0) + nominal);
+      }
     }
   });
 
@@ -56,6 +59,7 @@ function prosesAudit(acuanUsers, depositRows) {
     freebet: mapFreebet.get(u.username) || 0,
   }));
 }
+
 
 function hitungRingkasan(hasilFinal) {
   const totalDepo    = hasilFinal.reduce((a, b) => a + b.depo, 0);
