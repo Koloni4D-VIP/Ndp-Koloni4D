@@ -731,3 +731,226 @@ btnResetQris.addEventListener('click', () => {
   btnCopyQris.disabled = true;
   btnDownloadQris.disabled = true;
 });
+
+/* =========================================================
+   SCD — SCB DETECTION
+   ========================================================= */
+let rawRowsScd = [];
+let hasilScd = [];
+
+const fileScd         = document.getElementById('fileScd');
+const boxFileScd      = document.getElementById('boxFileScd');
+const nameScd         = document.getElementById('nameScd');
+const infoScd         = document.getElementById('infoScd');
+const btnProsesScd    = document.getElementById('btnProsesScd');
+const btnResetScd     = document.getElementById('btnResetScd');
+const btnCopyScd      = document.getElementById('btnCopyScd');
+const btnDownloadScd  = document.getElementById('btnDownloadScd');
+const statusMsgScd    = document.getElementById('statusMsgScd');
+const hasilScdSection = document.getElementById('hasilScdSection');
+
+function setStatusScd(msg, type = 'info') {
+  statusMsgScd.textContent = msg;
+  statusMsgScd.className = 'status-msg show ' + type;
+}
+
+fileScd.addEventListener('change', (e) => {
+  const f = e.target.files[0];
+  if (!f) return;
+
+  nameScd.textContent = '⏳ Membaca...';
+  boxFileScd.classList.remove('filled', 'error');
+  infoScd.textContent = '';
+  setStatusScd('⏳ Membaca file...', 'info');
+
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    try {
+      let text = '';
+      if (typeof evt.target.result === 'string') {
+        text = evt.target.result;
+      } else {
+        const data = new Uint8Array(evt.target.result);
+        const wb = XLSX.read(data, { type: 'array' });
+        const sheet = wb.Sheets[wb.SheetNames[0]];
+        text = XLSX.utils.sheet_to_csv(sheet);
+      }
+      const rows = Parser.parseCSV(text);
+      const headers = rows[0].map(h => h.trim());
+      rawRowsScd = rows.slice(1).filter(r => r.some(c => c && c.trim()))
+        .map(r => { const o = {}; headers.forEach((h,i) => o[h] = r[i] || ''); return o; });
+
+      if (!rawRowsScd.length) throw new Error('File kosong');
+
+      nameScd.textContent = '✅ ' + f.name;
+      boxFileScd.classList.add('filled');
+      infoScd.textContent = `${rawRowsScd.length} baris terbaca`;
+      setStatusScd(`✅ File OK — ${rawRowsScd.length} baris`, 'success');
+      btnProsesScd.disabled = false;
+      btnResetScd.disabled = false;
+    } catch (err) {
+      nameScd.textContent = '❌ ' + f.name;
+      boxFileScd.classList.add('error');
+      infoScd.textContent = err.message;
+      setStatusScd('❌ Gagal: ' + err.message, 'error');
+      rawRowsScd = [];
+      btnProsesScd.disabled = true;
+      btnResetScd.disabled = true;
+    }
+  };
+  if (/\.(xlsx|xls)$/i.test(f.name)) reader.readAsArrayBuffer(f);
+  else reader.readAsText(f, 'UTF-8');
+});
+
+btnProsesScd.addEventListener('click', () => {
+  hasilScd = Processor.prosesScd(rawRowsScd);
+
+  renderHasilScd();
+  hasilScbSection.classList.remove('hidden');
+  hasilScdSection.classList.remove('hidden');
+
+  btnCopyScd.disabled = false;
+  btnDownloadScd.disabled = false;
+
+  if (!hasilScd.length) {
+    setStatusScd('⚠️ Semua user sudah transaksi SCB.', 'warning');
+  } else {
+    setStatusScd(`✅ Selesai! ${hasilScd.length} user belum transaksi SCB.`, 'success');
+  }
+
+  hasilScdSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+
+function fmtRpScd(n) { return 'Rp ' + n.toLocaleString('id-ID'); }
+
+/* ========== SCD VARIABEL BARU ========== */
+let filterScd = { belumScb: true, sudahScb1x: false, doubleScb: false };
+
+function fmtRpScd(n) { return 'Rp ' + n.toLocaleString('id-ID'); }
+
+function renderHasilScd() {
+  const s = window._scdStats || {
+    totalUser: 0, belumScb: 0, sudahScb: 0,
+    doubleScb: 0, totalNominal: 0
+  };
+  const d = window._scdData || { belumScb: [], sudahScb: [], doubleScb: [] };
+
+  document.getElementById('kpiTotalQrisScd').textContent = s.totalUser.toLocaleString('id-ID');
+  document.getElementById('kpiBelumScd').textContent     = s.belumScb.toLocaleString('id-ID');
+  document.getElementById('kpiNominalScd').textContent   = fmtRpScd(s.totalNominal);
+  document.getElementById('kpiSudahScd').textContent     = s.sudahScb.toLocaleString('id-ID');
+  document.getElementById('kpiDoubleScd').textContent    = s.doubleScb.toLocaleString('id-ID');
+
+  applyFilterScd();
+}
+
+function applyFilterScd() {
+  const d = window._scdData || { belumScb: [], sudahScb: [], doubleScb: [] };
+
+  let list = [];
+  const sudahScb1x = d.sudahScb.filter(u => u.scbCount === 1);
+
+  if (filterScd.belumScb)   list = list.concat(d.belumScb.map(u => ({ ...u, kategori: 'BELUM SCB' })));
+  if (filterScd.sudahScb1x) list = list.concat(sudahScb1x.map(u => ({ ...u, kategori: 'SUDAH SCB' })));
+  if (filterScd.doubleScb)  list = list.concat(d.doubleScb.map(u => ({ ...u, kategori: 'DOUBLE SCB' })));
+
+  const order = { 'DOUBLE SCB': 0, 'SUDAH SCB': 1, 'BELUM SCB': 2 };
+  list.sort((a, b) => {
+    if (order[a.kategori] !== order[b.kategori]) return order[a.kategori] - order[b.kategori];
+    return b.total - a.total;
+  });
+
+  const tbody = document.querySelector('#tblHasilScd tbody');
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="4" class="empty-msg">Tidak ada data yang cocok dengan filter.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map((r, i) => {
+    const badgeCls = r.kategori === 'DOUBLE SCB' ? 'lucky'
+                   : r.kategori === 'SUDAH SCB'  ? 'freebet'
+                   : 'other';
+    const badgeText = r.kategori === 'DOUBLE SCB' ? `DOUBLE SCB (${r.scbCount}x)`
+                    : r.kategori === 'SUDAH SCB'  ? `SUDAH SCB (${r.scbCount}x)`
+                    : 'BELUM SCB';
+    return `
+      <tr>
+        <td>${i + 1}</td>
+        <td>${r.username}</td>
+        <td class="num">${fmtRpScd(r.total)}</td>
+        <td><span class="tag ${badgeCls}">${badgeText}</span></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function initFilterScd() {
+  const f1 = document.getElementById('scdFilterBelum');
+  const f2 = document.getElementById('scdFilterSudah');
+  const f3 = document.getElementById('scdFilterDouble');
+  if (f1) f1.addEventListener('change', e => { filterScd.belumScb   = e.target.checked; applyFilterScd(); });
+  if (f2) f2.addEventListener('change', e => { filterScd.sudahScb1x = e.target.checked; applyFilterScd(); });
+  if (f3) f3.addEventListener('change', e => { filterScd.doubleScb  = e.target.checked; applyFilterScd(); });
+}
+initFilterScd();
+
+btnCopyScd.addEventListener('click', async () => {
+  const d = window._scdData;
+  if (!d) return;
+
+  let list = [];
+  if (filterScd.belumScb)   list = list.concat(d.belumScb.map(u => ({ ...u, kategori: 'BELUM SCB' })));
+  if (filterScd.sudahScb1x) list = list.concat(d.sudahScb.filter(u => u.scbCount === 1).map(u => ({ ...u, kategori: 'SUDAH SCB' })));
+  if (filterScd.doubleScb)  list = list.concat(d.doubleScb.map(u => ({ ...u, kategori: 'DOUBLE SCB' })));
+
+  if (!list.length) return;
+
+  const tsv = list.map(r => `${r.username}\t${r.total}\t${r.kategori}`).join('\n');
+  try {
+    await navigator.clipboard.writeText(tsv);
+    setStatusScd('📋 Data di-copy!', 'success');
+  } catch (err) { /* fallback sama seperti sebelumnya */ }
+});
+
+btnDownloadScd.addEventListener('click', () => {
+  const d = window._scdData;
+  if (!d) return;
+
+  let list = [];
+  if (filterScd.belumScb)   list = list.concat(d.belumScb.map(u => ({ ...u, kategori: 'BELUM SCB' })));
+  if (filterScd.sudahScb1x) list = list.concat(d.sudahScb.filter(u => u.scbCount === 1).map(u => ({ ...u, kategori: 'SUDAH SCB' })));
+  if (filterScd.doubleScb)  list = list.concat(d.doubleScb.map(u => ({ ...u, kategori: 'DOUBLE SCB' })));
+
+  if (!list.length) return;
+
+  const wb = XLSX.utils.book_new();
+  const data = list.map((r, i) => ({
+    'NO': i + 1,
+    'USER ID': r.username,
+    'TOTAL TRANSAKSI': r.total,
+    'JUMLAH SCB': r.scbCount,
+    'KATEGORI': r.kategori,
+  }));
+  const ws = XLSX.utils.json_to_sheet(data);
+  ws['!cols'] = [{ wch: 6 }, { wch: 22 }, { wch: 16 }, { wch: 12 }, { wch: 14 }];
+  XLSX.utils.book_append_sheet(wb, ws, 'SCD');
+
+  const tgl = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `scd_detection_${tgl}.xlsx`);
+  setStatusScd('💾 File didownload.', 'success');
+});
+
+
+btnResetScd.addEventListener('click', () => {
+  rawRowsScd = []; hasilScd = [];
+  fileScd.value = '';
+  nameScd.textContent = ''; infoScd.textContent = '';
+  boxFileScd.classList.remove('filled', 'error');
+  hasilScdSection.classList.add('hidden');
+  statusMsgScd.className = 'status-msg';
+  btnProsesScd.disabled = true;
+  btnResetScd.disabled = true;
+  btnCopyScd.disabled = true;
+  btnDownloadScd.disabled = true;
+});

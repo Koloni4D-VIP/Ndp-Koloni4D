@@ -45,6 +45,11 @@
       <span class="nav-label">DP QRIS</span>
      <span class="nav-sub">Filter QRIS HOKI</span>
      </a>
+     <a class="nav-item" data-page="scd">
+     <span class="nav-icon">⚡</span>
+     <span class="nav-label">SCD</span>
+     <span class="nav-sub">SCB Detection</span>
+    </a>
     </nav>
 
     <div class="sidebar-footer">
@@ -381,6 +386,99 @@
     </div>
   </section>
 </section>
+
+<!-- ========== PAGE: SCD (SCB Detection) ========== -->
+<section class="page" id="page-scd">
+  <div class="topbar">
+    <div>
+      <div class="page-eyebrow">PANEL TOOLS</div>
+      <h1 class="page-title">⚡ SCB Detection</h1>
+      <p class="page-sub">User yang sudah deposit QRIS HOKI tapi belum dapat SCB / LUCKY SPIN</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>1️⃣ Upload File Deposit</h2>
+    <label class="upload-box" id="boxFileScd">
+      <input type="file" id="fileScd" accept=".csv,.xlsx,.xls,.txt">
+      <div class="icon">📋</div>
+      <div class="label">File Deposit (CSV / Excel)</div>
+      <div class="hint">Kolom: UserName, ToBank, Total</div>
+      <div class="filename" id="nameScd"></div>
+      <div class="info" id="infoScd"></div>
+    </label>
+
+    <div class="actions">
+      <button class="btn-primary" id="btnProsesScd" disabled>🚀 Proses Deteksi</button>
+      <button class="btn-secondary" id="btnResetScd" disabled>↺ Reset</button>
+      <button class="btn-copy" id="btnCopyScd" disabled>📋 Copy ke Clipboard</button>
+      <button class="btn-success" id="btnDownloadScd" disabled>⬇️ Download Excel</button>
+    </div>
+
+    <div class="status-msg" id="statusMsgScd"></div>
+  </div>
+
+  <section id="hasilScdSection" class="hidden">
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">🟢 Total Transaksi Member Aktif</div>
+      <div class="kpi-value" id="kpiTotalQrisScd">0</div>
+      <div class="kpi-sub">Total Member Aktif</div>
+    </div>
+    <div class="kpi-card scb">
+      <div class="kpi-label">🎯 BELUM SCB</div>
+      <div class="kpi-value" id="kpiBelumScd">0</div>
+      <div class="kpi-sub">Member Aktif Belum SCB</div>
+    </div>
+    <div class="kpi-card qris">
+      <div class="kpi-label">Total Nominal Seluruh Transaksi</div>
+      <div class="kpi-value" id="kpiNominalScd">Rp 0</div>
+      <div class="kpi-sub">semua transaksi hari ini</div>
+    </div>
+    <div class="kpi-card match">
+      <div class="kpi-label">✅ SUDAH SCB</div>
+      <div class="kpi-value" id="kpiSudahScd">0</div>
+      <div class="kpi-sub">total baris transaksi SCB</div>
+    </div>
+    <div class="kpi-card lucky">
+      <div class="kpi-label">⛔ DOUBLE SCB</div>
+      <div class="kpi-value" id="kpiDoubleScd">0</div>
+      <div class="kpi-sub">Member SCB ≥ 2x</div>
+    </div>
+  </div>
+
+  <!-- Filter Pemisah (mirip SCB) -->
+  <div class="filter-bar">
+    <strong style="font-size:0.9rem;">Filter Kategori:</strong>
+    <label>
+      <input type="checkbox" id="scdFilterBelum" checked>
+      <span class="filter-badge other">BELUM SCB</span>
+    </label>
+    <label>
+      <input type="checkbox" id="scdFilterSudah">
+      <span class="filter-badge freebet">SUDAH SCB</span>
+    </label>
+    <label>
+      <input type="checkbox" id="scdFilterDouble">
+      <span class="filter-badge lucky">DOUBLE SCB</span>
+    </label>
+  </div>
+
+  <div class="table-wrap">
+    <table id="tblHasilScd">
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>Username</th>
+          <th class="num">Total Transaksi</th>
+          <th>Kategori</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</section>
+
 
   </main>
 </div>

@@ -1,7 +1,3 @@
-/* =========================================================
-   processor.js — Logika bisnis Audit + SCB Filter
-   ========================================================= */
-
 function bersihkanUsername(s) {
   if (!s) return '';
   let baris1 = String(s).split('\n')[0].trim();
@@ -67,42 +63,30 @@ function hitungRingkasan(hasilFinal) {
 
 /* ---------- SCB FILTER ---------- */
 function normalizeRemark(remark) {
-  // Kalau kosong / null → LAINNYA
   if (!remark) return 'LAINNYA';
 
   const r = String(remark).toLowerCase().trim();
 
-  // ---- Normalisasi huruf ----
-  // Buang spasi & karakter selain huruf/angka
   const compact = r.replace(/[^a-z0-9]/g, '');
 
-  // ---- Deteksi LUCKY SPIN ----
-  // Syarat: ada "spin" (toleran typo) DAN ada huruf L,U,C,K,Y
   const hasSpin = /sp[ilny]{1,2}n?/i.test(compact);
   const luckyChars = ['l', 'u', 'c', 'k', 'y'];
   const hasAllLucky = luckyChars.every(ch => compact.includes(ch));
 
   if (hasSpin && hasAllLucky) return 'LUCKY SPIN';
 
-  // Singkatan "LS" saja
   if (/^ls$/.test(compact)) return 'LUCKY SPIN';
 
-  // ---- Deteksi FREEBET ----
-  // Syarat: ada "free" (atau varian) DAN ada "bet"
   const hasFree = /fr[e3]{1,2}/i.test(compact) || /^free?/i.test(compact);
   const hasBet  = /b[e3]t/i.test(compact);
 
   if (hasFree && hasBet) return 'FREEBET';
 
-  // Fallback FREEBET lain
   if (/^free?be?t?$/i.test(compact)) return 'FREEBET';
   if (/frebet/i.test(compact)) return 'FREEBET';
-  if (/newbe?e?r?/i.test(compact)) return 'FREEBET';   // new member, newbie, newbee
-  if (/new\s*member/i.test(r)) return 'FREEBET';        // "new member" (pakai spasi)
+  if (/newbe?e?r?/i.test(compact)) return 'FREEBET';  
+  if (/new\s*member/i.test(r)) return 'FREEBET';     
 
-  // ---- LAINNYA ----
-  // Kalau tidak cocok pattern apapun → LAINNYA
-  // INI PENTING: tidak boleh di-return null, harus tetap "LAINNYA"
   return 'LAINNYA';
 }
 
@@ -144,11 +128,9 @@ function prosesWd(rows) {
     const user = bersihkanUsername(row['UserName'] || row['Username'] || row['username'] || '');
     if (!user) return null;
 
-    // Gabungkan ToBank jadi 1 baris (buang newline, multiple space)
     const toBankRaw = String(row['ToBank'] || row['tobank'] || '');
     const toBank = toBankRaw.split('\n').map(s => s.trim()).filter(Boolean).join(' ');
 
-    // Total dengan minus di depan
     const total = -Math.abs(parseTotal(row['Total'] || row['total'] || 0));
 
     return {
@@ -159,10 +141,8 @@ function prosesWd(rows) {
     };
   }).filter(Boolean);
 
-  // Balik urutan
   hasil.reverse();
 
-  // Nomor urut ulang
   return hasil.map((item, i) => ({ no: i + 1, ...item }));
 }
 
@@ -185,12 +165,75 @@ function prosesQris(rows) {
     hasil.push({ username: user, total: nominal });
   });
 
-  hasil.reverse();
 
   return hasil.map((item, i) => ({ no: i + 1, ...item }));
 }
 
+/* ---------- SCB DETECTION ---------- */
+function prosesScd(rows) {
+  const userMap = new Map(); 
+  let totalNominalAll = 0;   
+  let scbRowCount = 0;       
 
+  rows.forEach(row => {
+    const status = String(row['Status'] || row['status'] || '').toUpperCase();
+    if (!status.includes('APPROVED')) return;  
+
+    const user = bersihkanUsername(
+      row['username'] || row['UserName'] || row['Username'] || '');
+
+    if (!user) return;
+
+    const toBank = String(row['tobank'] || row['ToBank'] || '').toUpperCase();
+    const nominal = parseTotal(row['total'] || row['Total'] || 0);
+
+    const isScb = toBank.includes('SCB');
+
+    totalNominalAll += nominal;
+
+    if (!userMap.has(user)) {
+      userMap.set(user, {
+        username: user,
+        total: 0,
+        scbCount: 0,       
+        transaksi: []     
+      });
+    }
+    const item = userMap.get(user);
+    item.total += nominal;
+
+    if (isScb) {
+      item.scbCount++;
+      scbRowCount++;
+      item.transaksi.push({ nominal, toBank: toBank.split('\n')[0].trim() });
+    }
+  });
+
+  const allUsers   = userMap.size;
+  const sudahScbArr = Array.from(userMap.values()).filter(u => u.scbCount > 0);
+  const belumScbArr = Array.from(userMap.values()).filter(u => u.scbCount === 0);
+  const doubleScbArr = Array.from(userMap.values()).filter(u => u.scbCount >= 2);
+
+  window._scdData = {
+    all: Array.from(userMap.values()),
+    belumScb: belumScbArr,
+    sudahScb: sudahScbArr,
+    doubleScb: doubleScbArr,
+  };
+
+  window._scdStats = {
+    totalUser: allUsers,
+    belumScb: belumScbArr.length,
+    sudahScb: scbRowCount,          
+    sudahScbUser: sudahScbArr.length, 
+    doubleScb: doubleScbArr.length,   
+    totalNominal: totalNominalAll,    
+  };
+
+  return belumScbArr
+    .sort((a, b) => b.total - a.total)
+    .map((item, i) => ({ no: i + 1, username: item.username, total: item.total }));
+}
 
 window.Processor = {
   bersihkanUsername,
@@ -201,5 +244,6 @@ window.Processor = {
   normalizeRemark,
   prosesSCB,
   prosesWd,   
-  prosesQris,         
+  prosesQris, 
+  prosesScd,        
 };
