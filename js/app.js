@@ -1,8 +1,18 @@
-/* =========================================================
-   app.js — UI Controller + Navigasi
-   ========================================================= */
+const themeToggle = document.getElementById('themeToggle');
+const savedTheme = localStorage.getItem('theme') || 'light';
 
-/* ---------- NAVIGASI SIDEBAR ---------- */
+if (savedTheme === 'dark') {
+  document.body.classList.add('dark');
+  if (themeToggle) themeToggle.textContent = '☀️';
+}
+
+themeToggle?.addEventListener('click', () => {
+  document.body.classList.toggle('dark');
+  const isDark = document.body.classList.contains('dark');
+  themeToggle.textContent = isDark ? '☀️' : '🌙';
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+});
+
 document.querySelectorAll('.nav-item').forEach(item => {
   item.addEventListener('click', () => {
     const page = item.dataset.page;
@@ -15,7 +25,6 @@ document.querySelectorAll('.nav-item').forEach(item => {
   });
 });
 
-/* ---------- COLLAPSE SIDEBAR ---------- */
 const sidebar = document.getElementById('sidebar');
 const collapseBtn = document.getElementById('collapseBtn');
 collapseBtn?.addEventListener('click', () => {
@@ -28,9 +37,6 @@ if (localStorage.getItem('sidebar_collapsed') === 'true') {
   if (collapseBtn) collapseBtn.textContent = '⇥';
 }
 
-/* =========================================================
-   NDP — AUDIT
-   ========================================================= */
 let acuanUsers = [];
 let depositRows = [];
 let hasilFinal = [];
@@ -61,7 +67,6 @@ function cekSiapProses() {
   btnReset.disabled  = !(acuanUsers.length || depositRows.length);
 }
 
-/* Upload TableData */
 fileAcuan.addEventListener('change', (e) => {
   const f = e.target.files[0];
   if (!f) return;
@@ -102,7 +107,6 @@ fileAcuan.addEventListener('change', (e) => {
   else reader.readAsText(f, 'UTF-8');
 });
 
-/* Upload Deposit */
 fileDeposit.addEventListener('change', (e) => {
   const f = e.target.files[0];
   if (!f) return;
@@ -147,7 +151,6 @@ fileDeposit.addEventListener('change', (e) => {
   else reader.readAsText(f, 'UTF-8');
 });
 
-/* Proses Audit */
 btnProses.addEventListener('click', () => {
   hasilFinal = Processor.prosesAudit(acuanUsers, depositRows);
   renderHasil();
@@ -181,7 +184,6 @@ function renderHasil() {
   `).join('');
 }
 
-/* Copy NDP */
 btnCopy.addEventListener('click', async () => {
   if (!hasilFinal.length) return;
   const tsv = hasilFinal.map(r => `${r.no}\t${r.registerDate || ''}\t${r.username}\t${r.depo}\t${r.freebet}`).join('\n');
@@ -197,7 +199,6 @@ btnCopy.addEventListener('click', async () => {
   }
 });
 
-/* Download Excel NDP */
 btnDownload.addEventListener('click', () => {
   const wb = XLSX.utils.book_new();
   const data = hasilFinal.map(r => ({
@@ -223,7 +224,6 @@ btnDownload.addEventListener('click', () => {
   setStatus('💾 File didownload: audit_ndp_' + tgl + '.xlsx', 'success');
 });
 
-/* Reset NDP */
 btnReset.addEventListener('click', () => {
   acuanUsers = []; depositRows = []; hasilFinal = [];
   fileAcuan.value = ''; fileDeposit.value = '';
@@ -237,9 +237,6 @@ btnReset.addEventListener('click', () => {
   btnDownload.disabled = true; btnCopy.disabled = true;
 });
 
-/* =========================================================
-   SCB — FILTER ONLY
-   ========================================================= */
 let rawRowsScb = [];
 let hasilScb = [];
 let hasilTampilScb = [];
@@ -283,7 +280,9 @@ fileScb.addEventListener('change', (e) => {
       }
       const rows = Parser.parseCSV(text);
       const headers = rows[0].map(h => h.trim());
-      rawRowsScb = rows.slice(1).filter(r => r.some(c => c && c.trim()))
+      rawRowsScb = rows.slice(1)
+        .filter(r => r.some(c => c && c.trim()))
+        .filter(r => String(r[0] || '').toLowerCase() !== 'referenceno')
         .map(r => { const o = {}; headers.forEach((h,i) => o[h] = r[i] || ''); return o; });
 
       if (!rawRowsScb.length) throw new Error('File kosong');
@@ -429,9 +428,6 @@ btnResetScb.addEventListener('click', () => {
   document.getElementById('fOther').checked = true;
 });
 
-/* =========================================================
-   WD — WITHDRAW QRIS
-   ========================================================= */
 let rawRowsWd = [];
 let hasilWd = [];
 
@@ -582,9 +578,6 @@ btnResetWd.addEventListener('click', () => {
   btnDownloadWd.disabled = true;
 });
 
-/* =========================================================
-   QRIS — FILTER QRIS HOKI
-   ========================================================= */
 let rawRowsQris = [];
 let hasilQris = [];
 
@@ -732,9 +725,6 @@ btnResetQris.addEventListener('click', () => {
   btnDownloadQris.disabled = true;
 });
 
-/* =========================================================
-   SCD — SCB DETECTION
-   ========================================================= */
 let rawRowsScd = [];
 let hasilScd = [];
 
@@ -806,7 +796,6 @@ btnProsesScd.addEventListener('click', () => {
   hasilScd = Processor.prosesScd(rawRowsScd);
 
   renderHasilScd();
-  hasilScbSection.classList.remove('hidden');
   hasilScdSection.classList.remove('hidden');
 
   btnCopyScd.disabled = false;
@@ -824,10 +813,7 @@ btnProsesScd.addEventListener('click', () => {
 
 function fmtRpScd(n) { return 'Rp ' + n.toLocaleString('id-ID'); }
 
-/* ========== SCD VARIABEL BARU ========== */
 let filterScd = { belumScb: true, sudahScb1x: false, doubleScb: false };
-
-function fmtRpScd(n) { return 'Rp ' + n.toLocaleString('id-ID'); }
 
 function renderHasilScd() {
   const s = window._scdStats || {

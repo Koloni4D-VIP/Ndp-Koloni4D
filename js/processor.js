@@ -27,6 +27,9 @@ function prosesAudit(acuanUsers, depositRows) {
   const mapFreebet = new Map();
 
   depositRows.forEach((row) => {
+    const status = String(row['status'] || row['Status'] || '').toUpperCase();
+    if (!status.includes('APPROVED')) return;
+
     const user = bersihkanUsername(
       row['username'] || row['userid'] || row['user'] || ''
     );
@@ -94,6 +97,9 @@ function prosesSCB(rows) {
   const map = new Map();
 
   rows.forEach(row => {
+    const status = String(row['Status'] || row['status'] || '').toUpperCase();
+    if (!status.includes('APPROVED')) return;
+    
     const toBank = String(row['ToBank'] || '').toUpperCase();
     if (!toBank.includes('SCB') || !toBank.includes('SPESIAL COSTUMER BONUS')) return;
 
@@ -120,11 +126,15 @@ function prosesSCB(rows) {
     .map((item, i) => ({ no: i + 1, ...item }));
 }
 
+
 /* ---------- WITHDRAW QRIS ---------- */
 const ADM_DEFAULT = -1600;   
 
 function prosesWd(rows) {
   const hasil = rows.map(row => {
+    const status = String(row['Status'] || row['status'] || '').toUpperCase();
+    if (!status.includes('APPROVED')) return null;
+
     const user = bersihkanUsername(row['UserName'] || row['Username'] || row['username'] || '');
     if (!user) return null;
 
@@ -151,6 +161,9 @@ function prosesQris(rows) {
   const hasil = [];
 
   rows.forEach(row => {
+    const status = String(row['Status'] || row['status'] || '').toUpperCase();
+    if (!status.includes('APPROVED')) return;
+
     const toBankRaw = String(row['ToBank'] || row['tobank'] || '');
     const toBank = toBankRaw.toUpperCase().replace(/\s+/g, ' ').trim();
     if (!toBank.includes('QRIS HOKI')) return;

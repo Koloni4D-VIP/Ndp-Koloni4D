@@ -15,8 +15,8 @@
   <aside class="sidebar" id="sidebar">
     <div class="brand">
       <div class="brand-logo">
-      <img src="assets/fav-tools.webp" alt="Logo">
-      <span class="shine"></span>
+        <img src="assets/fav-tools.webp" alt="Logo">
+        <span class="shine"></span>
       </div>
       <div class="brand-text">
         <div class="brand-title">PROJECT TOOLS</div>
@@ -36,20 +36,20 @@
         <span class="nav-sub">Filter SCB Only</span>
       </a>
       <a class="nav-item" data-page="wd">
-       <span class="nav-icon">💸</span>
-       <span class="nav-label">WD</span>
-       <span class="nav-sub">Withdraw QRIS</span>
-     </a>
-     <a class="nav-item" data-page="qris">
-      <span class="nav-icon">💰</span>
-      <span class="nav-label">DP QRIS</span>
-     <span class="nav-sub">Filter QRIS HOKI</span>
-     </a>
-     <a class="nav-item" data-page="scd">
-     <span class="nav-icon">⚡</span>
-     <span class="nav-label">SCD</span>
-     <span class="nav-sub">SCB Detection</span>
-    </a>
+        <span class="nav-icon">💸</span>
+        <span class="nav-label">WD</span>
+        <span class="nav-sub">Withdraw QRIS</span>
+      </a>
+      <a class="nav-item" data-page="qris">
+        <span class="nav-icon">💰</span>
+        <span class="nav-label">DP QRIS</span>
+        <span class="nav-sub">Filter QRIS HOKI</span>
+      </a>
+      <a class="nav-item" data-page="scd">
+        <span class="nav-icon">⚡</span>
+        <span class="nav-label">SCD</span>
+        <span class="nav-sub">SCB Detection</span>
+      </a>
     </nav>
 
     <div class="sidebar-footer">
@@ -57,11 +57,16 @@
         <div class="user-avatar">
           <img src="assets/Brand.webp" alt="Avatar">
           <span class="shine"></span>
-          </div>
+        </div>
         <div class="user-info">
           <div class="user-name">Tools</div>
           <div class="user-role">By: KangPangkas</div>
         </div>
+      </div>
+
+      <!-- ⭐ TOMBOL TEMA DI SINI -->
+      <button class="theme-toggle" id="themeToggle" title="Ganti Tema">🌙</button>
+    </div>
   </aside>
 
   <!-- ==================== MAIN ==================== -->
@@ -250,235 +255,235 @@
         </div>
       </section>
     </section>
-    
+
     <!-- ========== PAGE: WD (Withdraw QRIS) ========== -->
-<section class="page" id="page-wd">
-  <div class="topbar">
-    <div>
-      <div class="page-eyebrow">PANEL TOOLS</div>
-      <h1 class="page-title">💸 Withdraw QRIS</h1>
-      <p class="page-sub">Rekap withdraw QRIS — total minus, adm otomatis, urutan terbalik</p>
-    </div>
-  </div>
-
-  <!-- Upload -->
-  <div class="panel">
-    <h2>1️⃣ Upload File Withdraw</h2>
-    <label class="upload-box" id="boxFileWd">
-      <input type="file" id="fileWd" accept=".csv,.xlsx,.xls,.txt">
-      <div class="icon">📋</div>
-      <div class="label">File Withdraw (CSV / Excel)</div>
-      <div class="hint">Kolom: UserName, ToBank, Total</div>
-      <div class="filename" id="nameWd"></div>
-      <div class="info" id="infoWd"></div>
-    </label>
-
-    <div class="actions">
-      <button class="btn-primary" id="btnProsesWd" disabled>🚀 Proses Withdraw</button>
-      <button class="btn-secondary" id="btnResetWd" disabled>↺ Reset</button>
-      <button class="btn-copy" id="btnCopyWd" disabled>📋 Copy ke Clipboard</button>
-      <button class="btn-success" id="btnDownloadWd" disabled>⬇️ Download Excel</button>
-    </div>
-
-    <div class="status-msg" id="statusMsgWd"></div>
-  </div>
-
-  <!-- Hasil WD -->
-  <section id="hasilWdSection" class="hidden">
-    <div class="kpi-grid">
-      <div class="kpi-card">
-        <div class="kpi-label">Total Withdraw</div>
-        <div class="kpi-value" id="kpiTotalWd">0</div>
-        <div class="kpi-sub">baris</div>
+    <section class="page" id="page-wd">
+      <div class="topbar">
+        <div>
+          <div class="page-eyebrow">PANEL TOOLS</div>
+          <h1 class="page-title">💸 Withdraw QRIS</h1>
+          <p class="page-sub">Rekap withdraw QRIS — total minus, adm otomatis, urutan terbalik</p>
+        </div>
       </div>
-      <div class="kpi-card qris">
-        <div class="kpi-label">Total Nominal</div>
-        <div class="kpi-value" id="kpiNominalWd">Rp 0</div>
-        <div class="kpi-sub">semua user</div>
+
+      <!-- Upload -->
+      <div class="panel">
+        <h2>1️⃣ Upload File Withdraw</h2>
+        <label class="upload-box" id="boxFileWd">
+          <input type="file" id="fileWd" accept=".csv,.xlsx,.xls,.txt">
+          <div class="icon">📋</div>
+          <div class="label">File Withdraw (CSV / Excel)</div>
+          <div class="hint">Kolom: UserName, ToBank, Total</div>
+          <div class="filename" id="nameWd"></div>
+          <div class="info" id="infoWd"></div>
+        </label>
+
+        <div class="actions">
+          <button class="btn-primary" id="btnProsesWd" disabled>🚀 Proses Withdraw</button>
+          <button class="btn-secondary" id="btnResetWd" disabled>↺ Reset</button>
+          <button class="btn-copy" id="btnCopyWd" disabled>📋 Copy ke Clipboard</button>
+          <button class="btn-success" id="btnDownloadWd" disabled>⬇️ Download Excel</button>
+        </div>
+
+        <div class="status-msg" id="statusMsgWd"></div>
       </div>
-      <div class="kpi-card scb">
-        <div class="kpi-label">Total Adm</div>
-        <div class="kpi-value" id="kpiAdmWd">Rp 0</div>
-        <div class="kpi-sub">otomatis -1600/baris</div>
+
+      <!-- Hasil WD -->
+      <section id="hasilWdSection" class="hidden">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">Total Withdraw</div>
+            <div class="kpi-value" id="kpiTotalWd">0</div>
+            <div class="kpi-sub">baris</div>
+          </div>
+          <div class="kpi-card qris">
+            <div class="kpi-label">Total Nominal</div>
+            <div class="kpi-value" id="kpiNominalWd">Rp 0</div>
+            <div class="kpi-sub">semua user</div>
+          </div>
+          <div class="kpi-card scb">
+            <div class="kpi-label">Total Adm</div>
+            <div class="kpi-value" id="kpiAdmWd">Rp 0</div>
+            <div class="kpi-sub">otomatis -1600/baris</div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table id="tblHasilWd">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>TOBANK</th>
+                <th>USERNAME</th>
+                <th class="num">TOTAL</th>
+                <th class="num">ADM</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <!-- ========== PAGE: QRIS (Filter QRIS HOKI) ========== -->
+    <section class="page" id="page-qris">
+      <div class="topbar">
+        <div>
+          <div class="page-eyebrow">PANEL TOOLS</div>
+          <h1 class="page-title">🔥 Filter QRIS HOKI</h1>
+          <p class="page-sub">Filter transaksi QRIS HOKI — rekap per user dengan total nominal</p>
+        </div>
       </div>
-    </div>
 
-    <div class="table-wrap">
-      <table id="tblHasilWd">
-        <thead>
-          <tr>
-            <th>No</th>
-            <th>TOBANK</th>
-            <th>USERNAME</th>
-            <th class="num">TOTAL</th>
-            <th class="num">ADM</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </section>
-</section>
+      <!-- Upload -->
+      <div class="panel">
+        <h2>1️⃣ Upload File Deposit</h2>
+        <label class="upload-box" id="boxFileQris">
+          <input type="file" id="fileQris" accept=".csv,.xlsx,.xls,.txt">
+          <div class="icon">📋</div>
+          <div class="label">File Deposit (CSV / Excel)</div>
+          <div class="hint">Kolom: UserName, ToBank, Total, Remark</div>
+          <div class="filename" id="nameQris"></div>
+          <div class="info" id="infoQris"></div>
+        </label>
 
-<!-- ========== PAGE: QRIS (Filter QRIS HOKI) ========== -->
-<section class="page" id="page-qris">
-  <div class="topbar">
-    <div>
-      <div class="page-eyebrow">PANEL TOOLS</div>
-      <h1 class="page-title">🔥 Filter QRIS HOKI</h1>
-      <p class="page-sub">Filter transaksi QRIS HOKI — rekap per user dengan total nominal</p>
-    </div>
-  </div>
+        <div class="actions">
+          <button class="btn-primary" id="btnProsesQris" disabled>🚀 Proses Filter QRIS</button>
+          <button class="btn-secondary" id="btnResetQris" disabled>↺ Reset</button>
+          <button class="btn-copy" id="btnCopyQris" disabled>📋 Copy ke Clipboard</button>
+          <button class="btn-success" id="btnDownloadQris" disabled>⬇️ Download Excel</button>
+        </div>
 
-  <!-- Upload -->
-  <div class="panel">
-    <h2>1️⃣ Upload File Deposit</h2>
-    <label class="upload-box" id="boxFileQris">
-      <input type="file" id="fileQris" accept=".csv,.xlsx,.xls,.txt">
-      <div class="icon">📋</div>
-      <div class="label">File Deposit (CSV / Excel)</div>
-      <div class="hint">Kolom: UserName, ToBank, Total, Remark</div>
-      <div class="filename" id="nameQris"></div>
-      <div class="info" id="infoQris"></div>
-    </label>
-
-    <div class="actions">
-      <button class="btn-primary" id="btnProsesQris" disabled>🚀 Proses Filter QRIS</button>
-      <button class="btn-secondary" id="btnResetQris" disabled>↺ Reset</button>
-      <button class="btn-copy" id="btnCopyQris" disabled>📋 Copy ke Clipboard</button>
-      <button class="btn-success" id="btnDownloadQris" disabled>⬇️ Download Excel</button>
-    </div>
-
-    <div class="status-msg" id="statusMsgQris"></div>
-  </div>
-
-  <!-- Hasil QRIS -->
-  <section id="hasilQrisSection" class="hidden">
-    <div class="kpi-grid">
-      <div class="kpi-card">
-        <div class="kpi-label">Total User ID</div>
-        <div class="kpi-value" id="kpiTotalQris">0</div>
-        <div class="kpi-sub">user QRIS</div>
+        <div class="status-msg" id="statusMsgQris"></div>
       </div>
-      <div class="kpi-card qris">
-        <div class="kpi-label">Total Nominal QRIS</div>
-        <div class="kpi-value" id="kpiNominalQris">Rp 0</div>
-        <div class="kpi-sub">semua user</div>
+
+      <!-- Hasil QRIS -->
+      <section id="hasilQrisSection" class="hidden">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">Total User ID</div>
+            <div class="kpi-value" id="kpiTotalQris">0</div>
+            <div class="kpi-sub">user QRIS</div>
+          </div>
+          <div class="kpi-card qris">
+            <div class="kpi-label">Total Nominal QRIS</div>
+            <div class="kpi-value" id="kpiNominalQris">Rp 0</div>
+            <div class="kpi-sub">semua user</div>
+          </div>
+          <div class="kpi-card lucky">
+            <div class="kpi-label">Rata-rata / User</div>
+            <div class="kpi-value" id="kpiAvgQris">Rp 0</div>
+            <div class="kpi-sub">per user</div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table id="tblHasilQris">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>USER ID</th>
+                <th class="num">TOTAL</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <!-- ========== PAGE: SCD (SCB Detection) ========== -->
+    <section class="page" id="page-scd">
+      <div class="topbar">
+        <div>
+          <div class="page-eyebrow">PANEL TOOLS</div>
+          <h1 class="page-title">⚡ SCB Detection</h1>
+          <p class="page-sub">User yang sudah deposit QRIS HOKI tapi belum dapat SCB / LUCKY SPIN</p>
+        </div>
       </div>
-      <div class="kpi-card lucky">
-        <div class="kpi-label">Rata-rata / User</div>
-        <div class="kpi-value" id="kpiAvgQris">Rp 0</div>
-        <div class="kpi-sub">per user</div>
+
+      <div class="panel">
+        <h2>1️⃣ Upload File Deposit</h2>
+        <label class="upload-box" id="boxFileScd">
+          <input type="file" id="fileScd" accept=".csv,.xlsx,.xls,.txt">
+          <div class="icon">📋</div>
+          <div class="label">File Deposit (CSV / Excel)</div>
+          <div class="hint">Kolom: UserName, ToBank, Total</div>
+          <div class="filename" id="nameScd"></div>
+          <div class="info" id="infoScd"></div>
+        </label>
+
+        <div class="actions">
+          <button class="btn-primary" id="btnProsesScd" disabled>🚀 Proses Deteksi</button>
+          <button class="btn-secondary" id="btnResetScd" disabled>↺ Reset</button>
+          <button class="btn-copy" id="btnCopyScd" disabled>📋 Copy ke Clipboard</button>
+          <button class="btn-success" id="btnDownloadScd" disabled>⬇️ Download Excel</button>
+        </div>
+
+        <div class="status-msg" id="statusMsgScd"></div>
       </div>
-    </div>
 
-    <div class="table-wrap">
-      <table id="tblHasilQris">
-        <thead>
-          <tr>
-            <th>No</th>
-            <th>USER ID</th>
-            <th class="num">TOTAL</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </section>
-</section>
+      <section id="hasilScdSection" class="hidden">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">🟢 Total Transaksi Member Aktif</div>
+            <div class="kpi-value" id="kpiTotalQrisScd">0</div>
+            <div class="kpi-sub">Total Member Aktif</div>
+          </div>
+          <div class="kpi-card scb">
+            <div class="kpi-label">🎯 BELUM SCB</div>
+            <div class="kpi-value" id="kpiBelumScd">0</div>
+            <div class="kpi-sub">Member Aktif Belum SCB</div>
+          </div>
+          <div class="kpi-card qris">
+            <div class="kpi-label">Total Nominal Seluruh Transaksi</div>
+            <div class="kpi-value" id="kpiNominalScd">Rp 0</div>
+            <div class="kpi-sub">semua transaksi hari ini</div>
+          </div>
+          <div class="kpi-card match">
+            <div class="kpi-label">✅ SUDAH SCB</div>
+            <div class="kpi-value" id="kpiSudahScd">0</div>
+            <div class="kpi-sub">total baris transaksi SCB</div>
+          </div>
+          <div class="kpi-card lucky">
+            <div class="kpi-label">⛔ DOUBLE SCB</div>
+            <div class="kpi-value" id="kpiDoubleScd">0</div>
+            <div class="kpi-sub">Member SCB ≥ 2x</div>
+          </div>
+        </div>
 
-<!-- ========== PAGE: SCD (SCB Detection) ========== -->
-<section class="page" id="page-scd">
-  <div class="topbar">
-    <div>
-      <div class="page-eyebrow">PANEL TOOLS</div>
-      <h1 class="page-title">⚡ SCB Detection</h1>
-      <p class="page-sub">User yang sudah deposit QRIS HOKI tapi belum dapat SCB / LUCKY SPIN</p>
-    </div>
-  </div>
+        <!-- Filter Pemisah -->
+        <div class="filter-bar">
+          <strong style="font-size:0.9rem;">Filter Kategori:</strong>
+          <label>
+            <input type="checkbox" id="scdFilterBelum" checked>
+            <span class="filter-badge other">BELUM SCB</span>
+          </label>
+          <label>
+            <input type="checkbox" id="scdFilterSudah">
+            <span class="filter-badge freebet">SUDAH SCB</span>
+          </label>
+          <label>
+            <input type="checkbox" id="scdFilterDouble">
+            <span class="filter-badge lucky">DOUBLE SCB</span>
+          </label>
+        </div>
 
-  <div class="panel">
-    <h2>1️⃣ Upload File Deposit</h2>
-    <label class="upload-box" id="boxFileScd">
-      <input type="file" id="fileScd" accept=".csv,.xlsx,.xls,.txt">
-      <div class="icon">📋</div>
-      <div class="label">File Deposit (CSV / Excel)</div>
-      <div class="hint">Kolom: UserName, ToBank, Total</div>
-      <div class="filename" id="nameScd"></div>
-      <div class="info" id="infoScd"></div>
-    </label>
-
-    <div class="actions">
-      <button class="btn-primary" id="btnProsesScd" disabled>🚀 Proses Deteksi</button>
-      <button class="btn-secondary" id="btnResetScd" disabled>↺ Reset</button>
-      <button class="btn-copy" id="btnCopyScd" disabled>📋 Copy ke Clipboard</button>
-      <button class="btn-success" id="btnDownloadScd" disabled>⬇️ Download Excel</button>
-    </div>
-
-    <div class="status-msg" id="statusMsgScd"></div>
-  </div>
-
-  <section id="hasilScdSection" class="hidden">
-  <div class="kpi-grid">
-    <div class="kpi-card">
-      <div class="kpi-label">🟢 Total Transaksi Member Aktif</div>
-      <div class="kpi-value" id="kpiTotalQrisScd">0</div>
-      <div class="kpi-sub">Total Member Aktif</div>
-    </div>
-    <div class="kpi-card scb">
-      <div class="kpi-label">🎯 BELUM SCB</div>
-      <div class="kpi-value" id="kpiBelumScd">0</div>
-      <div class="kpi-sub">Member Aktif Belum SCB</div>
-    </div>
-    <div class="kpi-card qris">
-      <div class="kpi-label">Total Nominal Seluruh Transaksi</div>
-      <div class="kpi-value" id="kpiNominalScd">Rp 0</div>
-      <div class="kpi-sub">semua transaksi hari ini</div>
-    </div>
-    <div class="kpi-card match">
-      <div class="kpi-label">✅ SUDAH SCB</div>
-      <div class="kpi-value" id="kpiSudahScd">0</div>
-      <div class="kpi-sub">total baris transaksi SCB</div>
-    </div>
-    <div class="kpi-card lucky">
-      <div class="kpi-label">⛔ DOUBLE SCB</div>
-      <div class="kpi-value" id="kpiDoubleScd">0</div>
-      <div class="kpi-sub">Member SCB ≥ 2x</div>
-    </div>
-  </div>
-
-  <!-- Filter Pemisah (mirip SCB) -->
-  <div class="filter-bar">
-    <strong style="font-size:0.9rem;">Filter Kategori:</strong>
-    <label>
-      <input type="checkbox" id="scdFilterBelum" checked>
-      <span class="filter-badge other">BELUM SCB</span>
-    </label>
-    <label>
-      <input type="checkbox" id="scdFilterSudah">
-      <span class="filter-badge freebet">SUDAH SCB</span>
-    </label>
-    <label>
-      <input type="checkbox" id="scdFilterDouble">
-      <span class="filter-badge lucky">DOUBLE SCB</span>
-    </label>
-  </div>
-
-  <div class="table-wrap">
-    <table id="tblHasilScd">
-      <thead>
-        <tr>
-          <th>No</th>
-          <th>Username</th>
-          <th class="num">Total Transaksi</th>
-          <th>Kategori</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-</section>
-
+        <div class="table-wrap">
+          <table id="tblHasilScd">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Username</th>
+                <th class="num">Total Transaksi</th>
+                <th>Kategori</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
 
   </main>
 </div>
