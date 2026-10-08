@@ -111,7 +111,7 @@ function prosesSCB(rows) {
 
   rows.forEach(row => {
     const status = String(row['Status'] || row['status'] || '').toUpperCase();
-    if (!status.includes('APPROVED')) return;
+    if (!status.includes('APPROVED') && !status.includes('DISETUJUI')) return;
     
     const toBank = String(row['ToBank'] || '').toUpperCase();
     if (!toBank.includes('SCB') || !toBank.includes('SPESIAL COSTUMER BONUS')) return;
