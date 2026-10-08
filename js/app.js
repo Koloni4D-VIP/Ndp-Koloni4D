@@ -428,6 +428,9 @@ btnResetScb.addEventListener('click', () => {
   document.getElementById('fOther').checked = true;
 });
 
+// =========================================================
+// BAGIAN WITHDRAW QRIS (WD) - YANG DIPERBAIKI
+// =========================================================
 let rawRowsWd = [];
 let hasilWd = [];
 
@@ -469,13 +472,18 @@ fileWd.addEventListener('change', (e) => {
         text = XLSX.utils.sheet_to_csv(sheet);
       }
       const rows = Parser.parseCSV(text);
-      const headers = rows[0].map(h => h.trim());
+      
+      // ✅ PERBAIKAN: Bersihkan SEMUA spasi, tab, dan karakter tak terlihat dari header
+      const headers = rows[0].map(h => String(h).trim().replace(/[\s\uFEFF\xA0]+/g, ''));
+      
       rawRowsWd = rows.slice(1).filter(r => r.some(c => c && c.trim()))
-        .map(r => { const o = {}; headers.forEach((h,i) => o[h] = r[i] || ''); return o; });
-
-      console.log('=== HEADERS ===', headers);
-      console.log('=== ROW 1 ===', rawRowsWd[0]);
-      console.log('=== ROW 2 ===', rawRowsWd[1]);
+        .map(r => { 
+          const o = {}; 
+          headers.forEach((h, i) => { 
+            o[h] = r[i] || ''; 
+          }); 
+          return o; 
+        });
 
       if (!rawRowsWd.length) throw new Error('File kosong');
 
