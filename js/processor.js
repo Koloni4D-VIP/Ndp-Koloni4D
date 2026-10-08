@@ -132,16 +132,22 @@ const ADM_DEFAULT = -1600;
 
 function prosesWd(rows) {
   const hasil = rows.map(row => {
-    const status = String(row['Status'] || row['status'] || '').toUpperCase();
+    // Bikin semua key jadi lowercase & buang spasi biar aman
+    const r = {};
+    Object.keys(row).forEach(k => {
+      r[k.toLowerCase().replace(/[\s_]+/g, '')] = row[k];
+    });
+
+    const status = String(r['status'] || '').toUpperCase();
     if (!status.includes('APPROVED')) return null;
 
-    const user = bersihkanUsername(row['UserName'] || row['Username'] || row['username'] || '');
+    const user = bersihkanUsername(r['username'] || r['userid'] || '');
     if (!user) return null;
 
-    const toBankRaw = String(row['ToBank'] || row['tobank'] || '');
+    const toBankRaw = String(r['tobank'] || r['bank'] || '');
     const toBank = toBankRaw.split('\n').map(s => s.trim()).filter(Boolean).join(' ');
 
-    const total = -Math.abs(parseTotal(row['Total'] || row['total'] || 0));
+    const total = -Math.abs(parseTotal(r['total'] || r['nominal'] || 0));
 
     return {
       username: user,
@@ -152,9 +158,9 @@ function prosesWd(rows) {
   }).filter(Boolean);
 
   hasil.reverse();
-
   return hasil.map((item, i) => ({ no: i + 1, ...item }));
 }
+
 
 /* ---------- QRIS HOKI FILTER ---------- */
 function prosesQris(rows) {
