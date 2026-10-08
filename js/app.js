@@ -473,6 +473,10 @@ fileWd.addEventListener('change', (e) => {
       rawRowsWd = rows.slice(1).filter(r => r.some(c => c && c.trim()))
         .map(r => { const o = {}; headers.forEach((h,i) => o[h] = r[i] || ''); return o; });
 
+      console.log('=== HEADERS ===', headers);
+      console.log('=== ROW 1 ===', rawRowsWd[0]);
+      console.log('=== ROW 2 ===', rawRowsWd[1]);
+
       if (!rawRowsWd.length) throw new Error('File kosong');
 
       nameWd.textContent = '✅ ' + f.name;
