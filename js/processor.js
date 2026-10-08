@@ -9,17 +9,22 @@ function bersihkanUsername(s) {
 
 function klasifikasiToBank(tobank) {
   if (!tobank) return null;
-  const t = String(tobank).toUpperCase();
-  if (t.includes('QRIS HOKI')) return 'QRIS_HOKI';
-  if (t.includes('SCB') && t.includes('SPESIAL COSTUMER BONUS')) return 'SCB';
+  const t = String(tobank).toUpperCase().replace(/\s+/g, ' ').trim();
+  
+  if (t.includes('QRIS HOKI') || t.includes('QRISHOKI')) return 'QRIS_HOKI';
+  
+  const hasSCB = t.includes('SCB');
+  const hasSpesial = t.includes('SPESIAL') || t.includes('SPECIAL');
+  const hasCostumer = t.includes('COSTUMER') || t.includes('CUSTOMER');
+  const hasBonus = t.includes('BONUS');
+  
+  if (hasSCB && hasSpesial && hasCostumer && hasBonus) return 'SCB';
+  
+  if (hasSCB && (hasSpesial || hasBonus)) return 'SCB';
+  
   return null;
 }
 
-function parseTotal(val) {
-  if (!val) return 0;
-  const n = parseFloat(String(val).replace(/,/g, '').trim());
-  return isNaN(n) ? 0 : n;
-}
 
 /* ---------- AUDIT NDP ---------- */
 function prosesAudit(acuanUsers, depositRows) {
