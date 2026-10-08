@@ -1,3 +1,9 @@
+function parseTotal(val) {
+  if (!val) return 0;
+  const n = parseFloat(String(val).replace(/,/g, '').trim());
+  return isNaN(n) ? 0 : n;
+}
+
 function bersihkanUsername(s) {
   if (!s) return '';
   let baris1 = String(s).split('\n')[0].trim();
@@ -24,7 +30,6 @@ function klasifikasiToBank(tobank) {
   
   return null;
 }
-
 
 /* ---------- AUDIT NDP ---------- */
 function prosesAudit(acuanUsers, depositRows) {
