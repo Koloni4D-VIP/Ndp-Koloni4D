@@ -28,22 +28,24 @@ function prosesAudit(acuanUsers, depositRows) {
 
   depositRows.forEach((row) => {
     const status = String(row['status'] || row['Status'] || '').toUpperCase();
-    if (!status.includes('APPROVED')) return;
+    if (!status.includes('APPROVED') && !status.includes('DISETUJUI')) return;
 
     const user = bersihkanUsername(
       row['username'] || row['userid'] || row['user'] || ''
     );
     if (!user) return;
 
-    const kat = klasifikasiToBank(row['tobank'] || row['bank'] || '');
-    if (!kat) return;
+    const toBankRaw = String(row['tobank'] || row['bank'] || row['ToBank'] || '');
+    const toBankUpper = toBankRaw.toUpperCase();
 
-    const nominal = parseTotal(row['total'] || row['nominal'] || 0);
+    const nominal = parseTotal(row['total'] || row['nominal'] || row['Total'] || 0);
 
-    if (kat === 'QRIS_HOKI') {
-      mapDepo.set(user, (mapDepo.get(user) || 0) + nominal);
-    } else if (kat === 'SCB') {
+    const isSCB = toBankUpper.includes('SCB') && toBankUpper.includes('SPESIAL COSTUMER BONUS');
+
+    if (isSCB) {
       mapFreebet.set(user, (mapFreebet.get(user) || 0) + nominal);
+    } else {
+      mapDepo.set(user, (mapDepo.get(user) || 0) + nominal);
     }
   });
 
@@ -55,6 +57,7 @@ function prosesAudit(acuanUsers, depositRows) {
     freebet: mapFreebet.get(u.username) || 0,
   }));
 }
+
 
 function hitungRingkasan(hasilFinal) {
   const totalDepo    = hasilFinal.reduce((a, b) => a + b.depo, 0);
@@ -132,7 +135,6 @@ const ADM_DEFAULT = -1600;
 
 function prosesWd(rows) {
   const hasil = rows.map(row => {
-    // ✅ Filter status DIHAPUS — semua baris langsung diproses
 
     const user = bersihkanUsername(row['UserName'] || row['Username'] || row['username'] || '');
     if (!user) return null;
