@@ -956,18 +956,15 @@ btnResetScd.addEventListener('click', () => {
 /* =========================================================
    DAILY TASKS (2 TABEL: PAGI & MALAM) + NOTEPAD
    ========================================================= */
-const STORAGE_TASKS_V4 = 'daily_tasks_v4';
+const STORAGE_TASKS_V5 = 'daily_tasks_v5';
 const STORAGE_NOTES    = 'daily_notes_v1';
 
-// Default: kosong (kamu isi manual)
-let taskData = JSON.parse(localStorage.getItem(STORAGE_TASKS_V4) || 'null');
-if (!taskData) {
+// Load dari LocalStorage
+let taskData = JSON.parse(localStorage.getItem(STORAGE_TASKS_V5) || 'null');
+if (!taskData || !taskData.PAGI || !taskData.MALAM) {
   taskData = { PAGI: [], MALAM: [] };
-  localStorage.setItem(STORAGE_TASKS_V4, JSON.stringify(taskData));
+  localStorage.setItem(STORAGE_TASKS_V5, JSON.stringify(taskData));
 }
-// Pastikan struktur ada
-if (!taskData.PAGI)  taskData.PAGI  = [];
-if (!taskData.MALAM) taskData.MALAM = [];
 
 // ========== HELPER ==========
 function escapeHtml(s) {
@@ -984,7 +981,7 @@ function nowStr() {
 }
 
 function saveTasks() {
-  localStorage.setItem(STORAGE_TASKS_V4, JSON.stringify(taskData));
+  localStorage.setItem(STORAGE_TASKS_V5, JSON.stringify(taskData));
   renderShift('PAGI');
   renderShift('MALAM');
 }
@@ -994,6 +991,7 @@ function renderShift(shift) {
   const list = taskData[shift] || [];
   const tbody = document.querySelector(`#tbl${shift} tbody`);
   const statsEl = document.getElementById('stats' + shift);
+  if (!tbody || !statsEl) return;
 
   if (!list.length) {
     tbody.innerHTML = `<tr><td colspan="4" class="empty-msg" style="padding:30px 10px;font-size:0.85rem;">
@@ -1051,7 +1049,7 @@ document.querySelectorAll('.btn-add-task').forEach(btn => {
   });
 });
 
-// ========== EVENT DELEGATION (klik di tbody) ==========
+// ========== EVENT DELEGATION ==========
 document.querySelectorAll('.tbl-shift tbody').forEach(tbody => {
   tbody.addEventListener('click', (e) => {
     const el = e.target.closest('[data-shift][data-idx]');
@@ -1071,11 +1069,13 @@ document.querySelectorAll('.tbl-shift tbody').forEach(tbody => {
         item.doneAt = nowStr();
       }
       saveTasks();
+      return;
     }
 
-    // Klik teks -> edit
+    // Klik teks → edit inline
     if (el.classList.contains('task-editable')) {
       startEdit(el, shift, idx);
+      return;
     }
 
     // Tombol edit
@@ -1084,6 +1084,7 @@ document.querySelectorAll('.tbl-shift tbody').forEach(tbody => {
         `.task-editable[data-shift="${shift}"][data-idx="${idx}"]`
       );
       if (span) startEdit(span, shift, idx);
+      return;
     }
 
     // Tombol hapus
@@ -1113,86 +1114,39 @@ function startEdit(span, shift, idx) {
   sel.removeAllRanges();
   sel.addRange(range);
 
+  let finished = false;
   const finish = (save) => {
+    if (finished) return;
+    finished = true;
+
     span.contentEditable = 'false';
     span.classList.remove('editing');
 
     if (save) {
       const newText = span.textContent.trim();
-      if (newText) {
+      if (newText && newText !== originalText) {
         taskData[shift][idx].text = newText;
-        localStorage.setItem(STORAGE_TASKS_V4, JSON.stringify(taskData));
+        localStorage.setItem(STORAGE_TASKS_V5, JSON.stringify(taskData));
       }
     }
     renderShift(shift);
   };
 
   span.addEventListener('blur', () => finish(true), { once: true });
-  span.addEventListener('keydown', (ev) => {
+  span.addEventListener('keydown', function handler(ev) {
     if (ev.key === 'Enter') {
       ev.preventDefault();
+      span.removeEventListener('keydown', handler);
       span.blur();
     } else if (ev.key === 'Escape') {
       ev.preventDefault();
-      span.removeEventListener('blur', () => finish(true));
+      span.textContent = originalText;   // balik ke teks awal
+      span.removeEventListener('keydown', handler);
+      span.blur();
       finish(false);
     }
   });
 }
-
-// ========== ACTION BUTTONS (Reset, Copy, Excel, Clear) ==========
-document.querySelectorAll('.btn-mini').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const shift  = btn.dataset.shift;
-    const action = btn.dataset.action;
-    const list   = taskData[shift] || [];
-
-    // ---- RESET ----
-    if (action === 'reset') {
-      if (!list.length) return alert('Belum ada tugas.');
-      if (!confirm(`Reset status semua tugas SHIFT ${shift}?`)) return;
-      list.forEach(t => { t.status = 'NO'; t.doneAt = ''; });
-      saveTasks();
-    }
-
-    // ---- COPY ----
-    if (action === 'copy') {
-      if (!list.length) return alert('Belum ada tugas.');
-      const tsv = `NO\tTUGAS HARIAN\tSTATUS\tWAKTU SELESAI\n` +
-        list.map((t, i) =>
-          `${i + 1}\t${t.text}\t${t.status === 'DONE' ? 'Done' : 'No'}\t${t.doneAt || '-'}`
-        ).join('\n');
-      navigator.clipboard.writeText(tsv)
-        .then(() => alert(`📋 Data SHIFT ${shift} di-copy!`))
-        .catch(err => alert('Gagal copy: ' + err.message));
-    }
-
-    // ---- EXCEL ----
-    if (action === 'excel') {
-      if (!list.length) return alert('Belum ada tugas.');
-      const wb = XLSX.utils.book_new();
-      const data = list.map((t, i) => ({
-        'NO': i + 1,
-        'TUGAS HARIAN': t.text,
-        'STATUS': t.status === 'DONE' ? 'Done' : 'No',
-        'Waktu Selesai': t.doneAt || '-',
-      }));
-      const ws = XLSX.utils.json_to_sheet(data);
-      ws['!cols'] = [{ wch: 6 }, { wch: 55 }, { wch: 12 }, { wch: 20 }];
-      XLSX.utils.book_append_sheet(wb, ws, `SHIFT ${shift}`);
-      const tgl = new Date().toISOString().slice(0, 10);
-      XLSX.writeFile(wb, `jobdesc_${shift}_${tgl}.xlsx`);
-    }
-
-    // ---- CLEAR ----
-    if (action === 'clear') {
-      if (!list.length) return alert('Belum ada tugas.');
-      if (!confirm(`Hapus SEMUA tugas SHIFT ${shift}?`)) return;
-      taskData[shift] = [];
-      saveTasks();
-    }
-  });
-});
 
 // ========== NOTEPAD ==========
 const notesArea   = document.getElementById('notesArea');
@@ -1215,7 +1169,7 @@ function saveNotes() {
 let notesTimer = null;
 notesArea?.addEventListener('input', () => {
   clearTimeout(notesTimer);
-  notesTimer = setTimeout(saveNotes, 2000);  // auto-save setelah 2 detik
+  notesTimer = setTimeout(saveNotes, 2000);   // auto-save 2 detik
 });
 
 document.getElementById('btnSaveNotes')?.addEventListener('click', saveNotes);
