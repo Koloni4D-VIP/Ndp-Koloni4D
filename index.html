@@ -50,6 +50,12 @@
         <span class="nav-label">SCD</span>
         <span class="nav-sub">SCB Detection</span>
       </a>
+      
+      <a class="nav-item" data-page="tasks">
+       <span class="nav-icon">📌</span>
+       <span class="nav-label">TASKS</span>
+       <span class="nav-sub">Jobdesc & Notes</span>
+    </a>
     </nav>
 
     <div class="sidebar-footer">
@@ -484,6 +490,65 @@
         </div>
       </section>
     </section>
+    <section class="page" id="page-tasks">
+  <div class="topbar">
+    <div>
+      <div class="page-eyebrow">PANEL TOOLS</div>
+      <h1 class="page-title">📌 Daily Tasks & Notes</h1>
+      <p class="page-sub">Catat jobdesc harian & simpan catatan penting — otomatis tersimpan di browser</p>
+    </div>
+  </div>
+
+  <!-- ===== JOB DESC ===== -->
+  <div class="panel">
+    <h2>📋 Jobdesc Harian</h2>
+
+    <div class="task-input-row">
+      <input type="text" id="taskInput" placeholder="Tulis jobdesc baru..." class="task-input">
+      <select id="taskPriority" class="task-select">
+        <option value="low">🟢 Low</option>
+        <option value="med" selected>🟡 Medium</option>
+        <option value="high">🔴 High</option>
+      </select>
+      <button class="btn-primary" id="btnAddTask">➕ Tambah</button>
+    </div>
+
+    <div class="task-stats" id="taskStats"></div>
+
+    <div class="table-wrap" style="max-height: 500px; margin-top: 12px;">
+      <table id="tblTasks">
+        <thead>
+          <tr>
+            <th style="width: 40px;">✓</th>
+            <th>Jobdesc</th>
+            <th style="width: 120px;">Prioritas</th>
+            <th style="width: 130px;">Tanggal</th>
+            <th style="width: 80px;">Aksi</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="actions" style="margin-top: 14px;">
+      <button class="btn-secondary" id="btnClearDone">🧹 Hapus yang Selesai</button>
+      <button class="btn-secondary" id="btnClearAllTasks">🗑️ Hapus Semua</button>
+      <button class="btn-copy" id="btnExportTasks">📋 Copy ke Clipboard</button>
+      <button class="btn-success" id="btnDownloadTasks">⬇️ Download Excel</button>
+    </div>
+  </div>
+
+  <!-- ===== NOTES ===== -->
+  <div class="panel">
+    <h2>📝 Catatan / Notepad</h2>
+    <textarea id="notesArea" class="notes-area" placeholder="Tulis catatan penting di sini...&#10;&#10;Contoh:&#10;- Follow up user A&#10;- Cek duplikat deposit&#10;- Reminder meeting jam 3 sore"></textarea>
+    <div class="actions" style="margin-top: 14px;">
+      <button class="btn-primary" id="btnSaveNotes">💾 Save</button>
+      <button class="btn-secondary" id="btnClearNotes">🗑️ Clear</button>
+      <span class="notes-status" id="notesStatus"></span>
+    </div>
+  </div>
+</section>
 
   </main>
 </div>
