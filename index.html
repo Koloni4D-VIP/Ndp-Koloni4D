@@ -492,77 +492,78 @@
 
     <!-- ========== PAGE: TASKS (Jobdesc & Notes) ========== -->
     <section class="page" id="page-tasks">
-      <div class="topbar">
-        <div>
-          <div class="page-eyebrow">PANEL TOOLS</div>
-          <h1 class="page-title">📌 Daily Tasks & Notes</h1>
-          <p class="page-sub">Checklist jobdesc per shift & catatan penting — Kerjakan Semua List Harian WAJIB dibawah ini</p>
-        </div>
+  <div class="topbar">
+    <div>
+      <div class="page-eyebrow">PANEL TOOLS</div>
+      <h1 class="page-title">📌 Daily Tasks & Notes</h1>
+      <p class="page-sub">Checklist jobdesc per shift & catatan penting — Kerjakan Semua List Harian WAJIB dibawah ini</p>
+    </div>
+  </div>
+
+  <!-- ===== 2 TABEL BERDAMPINGAN ===== -->
+  <div class="shift-grid">
+
+    <!-- ============ SHIFT PAGI ============ -->
+    <div class="shift-panel">
+      <div class="shift-header pagi">
+        <h2>🌅 SHIFT PAGI</h2>
+        <button class="btn-add-task" data-shift="PAGI">➕ Tambah</button>
       </div>
 
-      <!-- ===== 2 TABEL BERDAMPINGAN ===== -->
-      <div class="shift-grid">
+      <div class="shift-stats" id="statsPAGI"></div>
 
-        <!-- ============ SHIFT PAGI ============ -->
-        <div class="shift-panel">
-          <div class="shift-header pagi">
-            <h2>🌅 SHIFT PAGI</h2>
-            <button class="btn-add-task" data-shift="PAGI">➕ Tambah</button>
-          </div>
+      <div class="table-wrap shift-table-wrap">
+        <table class="tbl-shift" id="tblPAGI">
+          <thead>
+            <tr>
+              <th style="width: 40px;">NO</th>
+              <th>TUGAS HARIAN</th>
+              <th style="width: 90px;">STATUS</th>
+              <th style="width: 90px;">AKSI</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
 
-          <div class="shift-stats" id="statsPAGI"></div>
-
-          <div class="table-wrap shift-table-wrap">
-            <table class="tbl-shift" id="tblPAGI">
-              <thead>
-                <tr>
-                  <th style="width: 40px;">NO</th>
-                  <th>TUGAS HARIAN</th>
-                  <th style="width: 90px;">STATUS</th>
-                  <th style="width: 90px;">EDIT</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- ============ SHIFT MALAM ============ -->
-        <div class="shift-panel">
-          <div class="shift-header malam">
-            <h2>🌙 SHIFT MALAM</h2>
-            <button class="btn-add-task" data-shift="MALAM">➕ Tambah</button>
-          </div>
-
-          <div class="shift-stats" id="statsMALAM"></div>
-
-          <div class="table-wrap shift-table-wrap">
-            <table class="tbl-shift" id="tblMALAM">
-              <thead>
-                <tr>
-                  <th style="width: 40px;">NO</th>
-                  <th>TUGAS HARIAN</th>
-                  <th style="width: 90px;">STATUS</th>
-                  <th style="width: 90px;">EDIT</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-
+    <!-- ============ SHIFT MALAM ============ -->
+    <div class="shift-panel">
+      <div class="shift-header malam">
+        <h2>🌙 SHIFT MALAM</h2>
+        <button class="btn-add-task" data-shift="MALAM">➕ Tambah</button>
       </div>
 
-      <!-- ===== NOTEPAD ===== -->
-      <div class="panel" style="margin-top: 18px;">
-        <h2>📝 Notepad / Catatan Penting</h2>
-        <textarea id="notesArea" class="notes-area" placeholder="Tulis catatan penting di sini...</textarea>
-        <div class="actions" style="margin-top: 14px;">
-          <button class="btn-primary" id="btnSaveNotes">💾 Save</button>
-          <button class="btn-secondary" id="btnClearNotes">🗑️ Clear</button>
-          <span class="notes-status" id="notesStatus"></span>
-        </div>
+      <div class="shift-stats" id="statsMALAM"></div>
+
+      <div class="table-wrap shift-table-wrap">
+        <table class="tbl-shift" id="tblMALAM">
+          <thead>
+            <tr>
+              <th style="width: 40px;">NO</th>
+              <th>TUGAS HARIAN</th>
+              <th style="width: 90px;">STATUS</th>
+              <th style="width: 90px;">AKSI</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
       </div>
-    </section>
+    </div>
+
+  </div>
+
+  <!-- ===== NOTEPAD ===== -->
+  <div class="panel" style="margin-top: 18px;">
+    <h2>📝 Notepad / Catatan Penting</h2>
+    <textarea id="notesArea" class="notes-area" placeholder="Tulis catatan penting di sini..."></textarea>
+    <div class="actions" style="margin-top: 14px;">
+      <button class="btn-primary" id="btnSaveNotes">💾 Save</button>
+      <button class="btn-secondary" id="btnClearNotes">🗑️ Clear</button>
+      <span class="notes-status" id="notesStatus"></span>
+    </div>
+  </div>
+</section>
 
   </main>
 </div>
