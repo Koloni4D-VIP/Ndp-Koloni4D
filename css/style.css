@@ -554,3 +554,163 @@ tr:hover { background: #f1f5f9; }
   .nav-sub { display: none !important; }
   .main { padding: 18px; }
 }
+
+/* ============ DAILY TASKS ============ */
+.task-input-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.task-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 10px 14px;
+  border: 2px solid #cbd5e1;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.task-input:focus {
+  border-color: var(--accent);
+}
+body.dark .task-input {
+  background: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+.task-select {
+  padding: 10px 14px;
+  border: 2px solid #cbd5e1;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+}
+body.dark .task-select {
+  background: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+.task-stats {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  padding: 8px 0;
+  border-bottom: 1px dashed #cbd5e1;
+  margin-bottom: 8px;
+}
+.task-stats b { color: var(--text); }
+
+/* Baris tugas */
+.task-row {
+  display: table-row;
+}
+.task-row.done .task-text {
+  text-decoration: line-through;
+  color: var(--text-faint);
+  opacity: 0.6;
+}
+
+.task-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--green);
+}
+
+.task-text {
+  font-size: 0.9rem;
+  word-break: break-word;
+  white-space: normal;
+  min-width: 250px;
+}
+
+.task-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+}
+.task-badge.low  { background: var(--green); }
+.task-badge.med  { background: var(--orange); }
+.task-badge.high { background: #dc2626; }
+
+.task-date {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+
+.btn-delete-task {
+  background: #fee2e2;
+  color: #dc2626;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: 0.2s;
+}
+.btn-delete-task:hover {
+  background: #dc2626;
+  color: #fff;
+}
+body.dark .btn-delete-task {
+  background: #450a0a;
+  color: #fca5a5;
+}
+body.dark .btn-delete-task:hover {
+  background: #dc2626;
+  color: #fff;
+}
+
+/* ============ NOTES ============ */
+.notes-area {
+  width: 100%;
+  min-height: 280px;
+  padding: 14px;
+  border: 2px solid #cbd5e1;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s;
+  background: #fefce8;
+  color: #422006;
+}
+.notes-area:focus {
+  border-color: var(--accent);
+  background: #fff;
+}
+body.dark .notes-area {
+  background: #1e293b;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+body.dark .notes-area:focus {
+  background: #0f172a;
+}
+
+.notes-status {
+  font-size: 0.85rem;
+  color: var(--green);
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.notes-status.show {
+  opacity: 1;
+}
