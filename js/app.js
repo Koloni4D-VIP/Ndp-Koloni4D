@@ -954,168 +954,252 @@ btnResetScd.addEventListener('click', () => {
 });
 
 /* =========================================================
-   DAILY TASKS & NOTES (LocalStorage)
+   DAILY TASKS (2 TABEL: PAGI & MALAM) + NOTEPAD
    ========================================================= */
-const STORAGE_TASKS = 'daily_tasks_v1';
-const STORAGE_NOTES = 'daily_notes_v1';
+const STORAGE_TASKS_V4 = 'daily_tasks_v4';
+const STORAGE_NOTES    = 'daily_notes_v1';
 
-const taskInput    = document.getElementById('taskInput');
-const taskPriority = document.getElementById('taskPriority');
-const btnAddTask   = document.getElementById('btnAddTask');
-const tblTasksBody = document.querySelector('#tblTasks tbody');
-const taskStats    = document.getElementById('taskStats');
-const notesArea    = document.getElementById('notesArea');
-const notesStatus  = document.getElementById('notesStatus');
-
-let tasks = JSON.parse(localStorage.getItem(STORAGE_TASKS) || '[]');
-
-// ========== RENDER TASKS ==========
-function renderTasks() {
-  if (!tasks.length) {
-    tblTasksBody.innerHTML = `<tr><td colspan="5" class="empty-msg">Belum ada jobdesc. Tambahkan di atas! 📝</td></tr>`;
-    taskStats.textContent = '';
-    return;
-  }
-
-  tblTasksBody.innerHTML = tasks.map((t, i) => `
-    <tr class="task-row ${t.done ? 'done' : ''}">
-      <td style="text-align:center;">
-        <input type="checkbox" class="task-checkbox" data-idx="${i}" ${t.done ? 'checked' : ''}>
-      </td>
-      <td class="task-text">${escapeHtml(t.text)}</td>
-      <td><span class="task-badge ${t.priority}">${
-        t.priority === 'low' ? '🟢 Low' : t.priority === 'med' ? '🟡 Medium' : '🔴 High'
-      }</span></td>
-      <td class="task-date">${t.date || '-'}</td>
-      <td style="text-align:center;">
-        <button class="btn-delete-task" data-idx="${i}" title="Hapus">🗑️</button>
-      </td>
-    </tr>
-  `).join('');
-
-  // Stats
-  const total = tasks.length;
-  const done  = tasks.filter(t => t.done).length;
-  const high  = tasks.filter(t => !t.done && t.priority === 'high').length;
-  taskStats.innerHTML = `
-    Total: <b>${total}</b> &nbsp;|&nbsp;
-    Selesai: <b style="color:var(--green)">${done}</b> &nbsp;|&nbsp;
-    Pending: <b style="color:var(--orange)">${total - done}</b> &nbsp;|&nbsp;
-    Prioritas Tinggi: <b style="color:#dc2626">${high}</b>
-  `;
+// Default: kosong (kamu isi manual)
+let taskData = JSON.parse(localStorage.getItem(STORAGE_TASKS_V4) || 'null');
+if (!taskData) {
+  taskData = { PAGI: [], MALAM: [] };
+  localStorage.setItem(STORAGE_TASKS_V4, JSON.stringify(taskData));
 }
+// Pastikan struktur ada
+if (!taskData.PAGI)  taskData.PAGI  = [];
+if (!taskData.MALAM) taskData.MALAM = [];
 
+// ========== HELPER ==========
 function escapeHtml(s) {
   return String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function nowStr() {
+  const d = new Date();
+  const tgl = d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const jam = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  return `${tgl} ${jam}`;
 }
 
 function saveTasks() {
-  localStorage.setItem(STORAGE_TASKS, JSON.stringify(tasks));
-  renderTasks();
+  localStorage.setItem(STORAGE_TASKS_V4, JSON.stringify(taskData));
+  renderShift('PAGI');
+  renderShift('MALAM');
 }
 
-// ========== ADD TASK ==========
-function addTask() {
-  const text = taskInput.value.trim();
-  if (!text) return;
+// ========== RENDER ==========
+function renderShift(shift) {
+  const list = taskData[shift] || [];
+  const tbody = document.querySelector(`#tbl${shift} tbody`);
+  const statsEl = document.getElementById('stats' + shift);
 
-  const now = new Date();
-  const tgl = now.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="4" class="empty-msg" style="padding:30px 10px;font-size:0.85rem;">
+      Belum ada tugas. Klik ➕ Tambah di atas.
+    </td></tr>`;
+    statsEl.innerHTML = 'Total: <b>0</b>';
+    return;
+  }
 
-  tasks.unshift({
-    text: text,
-    priority: taskPriority.value,
-    done: false,
-    date: tgl,
+  tbody.innerHTML = list.map((t, i) => {
+    const done = t.status === 'DONE';
+    return `
+      <tr class="${done ? 'task-row-done' : ''}" data-shift="${shift}">
+        <td style="text-align:center;font-weight:600;color:var(--text-dim);">${i + 1}</td>
+        <td>
+          <span class="task-editable" 
+                data-shift="${shift}" 
+                data-idx="${i}" 
+                title="Klik untuk edit">${escapeHtml(t.text)}</span>
+          ${done && t.doneAt ? `<span class="task-time">⏱ ${t.doneAt}</span>` : ''}
+        </td>
+        <td>
+          <span class="status-toggle ${done ? 'done' : 'no'}" 
+                data-shift="${shift}" 
+                data-idx="${i}">
+            ${done ? '✅ Done' : '❌ No'}
+          </span>
+        </td>
+        <td style="text-align:center;white-space:nowrap;">
+          <button class="btn-icon" data-shift="${shift}" data-idx="${i}" data-action="edit" title="Edit">✏️</button>
+          <button class="btn-icon danger" data-shift="${shift}" data-idx="${i}" data-action="delete" title="Hapus">🗑️</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  const total = list.length;
+  const done  = list.filter(t => t.status === 'DONE').length;
+  statsEl.innerHTML = `
+    Total: <b>${total}</b> &nbsp;|&nbsp;
+    ✅ <b style="color:var(--green)">${done}</b> &nbsp;|&nbsp;
+    ❌ <b style="color:#dc2626">${total - done}</b> &nbsp;|&nbsp;
+    Progress: <b>${total ? Math.round(done / total * 100) : 0}%</b>
+  `;
+}
+
+// ========== TAMBAH TUGAS ==========
+document.querySelectorAll('.btn-add-task').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const shift = btn.dataset.shift;
+    const text = prompt(`Tambah tugas baru untuk SHIFT ${shift}:`);
+    if (!text || !text.trim()) return;
+    taskData[shift].push({ text: text.trim(), status: 'NO', doneAt: '' });
+    saveTasks();
   });
-
-  taskInput.value = '';
-  taskInput.focus();
-  saveTasks();
-}
-
-btnAddTask?.addEventListener('click', addTask);
-taskInput?.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') addTask();
 });
 
-// ========== TOGGLE / DELETE (Event Delegation) ==========
-tblTasksBody?.addEventListener('click', (e) => {
-  // Toggle done
-  if (e.target.classList.contains('task-checkbox')) {
-    const idx = Number(e.target.dataset.idx);
-    tasks[idx].done = e.target.checked;
-    saveTasks();
-  }
-  // Delete
-  if (e.target.classList.contains('btn-delete-task')) {
-    const idx = Number(e.target.dataset.idx);
-    if (confirm('Hapus jobdesc ini?')) {
-      tasks.splice(idx, 1);
+// ========== EVENT DELEGATION (klik di tbody) ==========
+document.querySelectorAll('.tbl-shift tbody').forEach(tbody => {
+  tbody.addEventListener('click', (e) => {
+    const el = e.target.closest('[data-shift][data-idx]');
+    if (!el) return;
+
+    const shift = el.dataset.shift;
+    const idx   = Number(el.dataset.idx);
+
+    // Toggle status
+    if (el.classList.contains('status-toggle')) {
+      const item = taskData[shift][idx];
+      if (item.status === 'DONE') {
+        item.status = 'NO';
+        item.doneAt = '';
+      } else {
+        item.status = 'DONE';
+        item.doneAt = nowStr();
+      }
       saveTasks();
     }
-  }
+
+    // Klik teks -> edit
+    if (el.classList.contains('task-editable')) {
+      startEdit(el, shift, idx);
+    }
+
+    // Tombol edit
+    if (el.dataset.action === 'edit') {
+      const span = document.querySelector(
+        `.task-editable[data-shift="${shift}"][data-idx="${idx}"]`
+      );
+      if (span) startEdit(span, shift, idx);
+    }
+
+    // Tombol hapus
+    if (el.dataset.action === 'delete') {
+      if (confirm('Hapus tugas ini?')) {
+        taskData[shift].splice(idx, 1);
+        saveTasks();
+      }
+    }
+  });
 });
 
-// ========== CLEAR ==========
-document.getElementById('btnClearDone')?.addEventListener('click', () => {
-  const doneCount = tasks.filter(t => t.done).length;
-  if (!doneCount) return alert('Tidak ada jobdesc yang selesai.');
-  if (confirm(`Hapus ${doneCount} jobdesc yang sudah selesai?`)) {
-    tasks = tasks.filter(t => !t.done);
-    saveTasks();
-  }
+// ========== EDIT INLINE ==========
+function startEdit(span, shift, idx) {
+  if (span.classList.contains('editing')) return;
+
+  const originalText = taskData[shift][idx].text;
+  span.classList.add('editing');
+  span.contentEditable = 'true';
+  span.textContent = originalText;
+  span.focus();
+
+  // Pilih semua teks
+  const range = document.createRange();
+  range.selectNodeContents(span);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+
+  const finish = (save) => {
+    span.contentEditable = 'false';
+    span.classList.remove('editing');
+
+    if (save) {
+      const newText = span.textContent.trim();
+      if (newText) {
+        taskData[shift][idx].text = newText;
+        localStorage.setItem(STORAGE_TASKS_V4, JSON.stringify(taskData));
+      }
+    }
+    renderShift(shift);
+  };
+
+  span.addEventListener('blur', () => finish(true), { once: true });
+  span.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Enter') {
+      ev.preventDefault();
+      span.blur();
+    } else if (ev.key === 'Escape') {
+      ev.preventDefault();
+      span.removeEventListener('blur', () => finish(true));
+      finish(false);
+    }
+  });
+}
+
+// ========== ACTION BUTTONS (Reset, Copy, Excel, Clear) ==========
+document.querySelectorAll('.btn-mini').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const shift  = btn.dataset.shift;
+    const action = btn.dataset.action;
+    const list   = taskData[shift] || [];
+
+    // ---- RESET ----
+    if (action === 'reset') {
+      if (!list.length) return alert('Belum ada tugas.');
+      if (!confirm(`Reset status semua tugas SHIFT ${shift}?`)) return;
+      list.forEach(t => { t.status = 'NO'; t.doneAt = ''; });
+      saveTasks();
+    }
+
+    // ---- COPY ----
+    if (action === 'copy') {
+      if (!list.length) return alert('Belum ada tugas.');
+      const tsv = `NO\tTUGAS HARIAN\tSTATUS\tWAKTU SELESAI\n` +
+        list.map((t, i) =>
+          `${i + 1}\t${t.text}\t${t.status === 'DONE' ? 'Done' : 'No'}\t${t.doneAt || '-'}`
+        ).join('\n');
+      navigator.clipboard.writeText(tsv)
+        .then(() => alert(`📋 Data SHIFT ${shift} di-copy!`))
+        .catch(err => alert('Gagal copy: ' + err.message));
+    }
+
+    // ---- EXCEL ----
+    if (action === 'excel') {
+      if (!list.length) return alert('Belum ada tugas.');
+      const wb = XLSX.utils.book_new();
+      const data = list.map((t, i) => ({
+        'NO': i + 1,
+        'TUGAS HARIAN': t.text,
+        'STATUS': t.status === 'DONE' ? 'Done' : 'No',
+        'Waktu Selesai': t.doneAt || '-',
+      }));
+      const ws = XLSX.utils.json_to_sheet(data);
+      ws['!cols'] = [{ wch: 6 }, { wch: 55 }, { wch: 12 }, { wch: 20 }];
+      XLSX.utils.book_append_sheet(wb, ws, `SHIFT ${shift}`);
+      const tgl = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(wb, `jobdesc_${shift}_${tgl}.xlsx`);
+    }
+
+    // ---- CLEAR ----
+    if (action === 'clear') {
+      if (!list.length) return alert('Belum ada tugas.');
+      if (!confirm(`Hapus SEMUA tugas SHIFT ${shift}?`)) return;
+      taskData[shift] = [];
+      saveTasks();
+    }
+  });
 });
 
-document.getElementById('btnClearAllTasks')?.addEventListener('click', () => {
-  if (!tasks.length) return;
-  if (confirm('Hapus SEMUA jobdesc? Tindakan ini tidak bisa dibatalkan.')) {
-    tasks = [];
-    saveTasks();
-  }
-});
+// ========== NOTEPAD ==========
+const notesArea   = document.getElementById('notesArea');
+const notesStatus = document.getElementById('notesStatus');
 
-// ========== COPY & DOWNLOAD ==========
-document.getElementById('btnExportTasks')?.addEventListener('click', async () => {
-  if (!tasks.length) return;
-  const tsv = tasks.map(t =>
-    `${t.done ? '[✓]' : '[ ]'}\t${t.text}\t${t.priority}\t${t.date || ''}`
-  ).join('\n');
-  try {
-    await navigator.clipboard.writeText(tsv);
-    alert('📋 Data jobdesc di-copy! Paste ke mana saja.');
-  } catch (err) {
-    alert('Gagal copy: ' + err.message);
-  }
-});
-
-document.getElementById('btnDownloadTasks')?.addEventListener('click', () => {
-  if (!tasks.length) return;
-  const wb = XLSX.utils.book_new();
-  const data = tasks.map((t, i) => ({
-    'NO': i + 1,
-    'STATUS': t.done ? 'SELESAI' : 'PENDING',
-    'JOBDESC': t.text,
-    'PRIORITAS': t.priority.toUpperCase(),
-    'TANGGAL': t.date || '',
-  }));
-  const ws = XLSX.utils.json_to_sheet(data);
-  ws['!cols'] = [{ wch: 6 }, { wch: 12 }, { wch: 50 }, { wch: 12 }, { wch: 14 }];
-  XLSX.utils.book_append_sheet(wb, ws, 'Jobdesc');
-  const tgl = new Date().toISOString().slice(0, 10);
-  XLSX.writeFile(wb, `jobdesc_${tgl}.xlsx`);
-});
-
-// ========== NOTES ==========
 function loadNotes() {
-  if (notesArea) {
-    notesArea.value = localStorage.getItem(STORAGE_NOTES) || '';
-  }
+  if (notesArea) notesArea.value = localStorage.getItem(STORAGE_NOTES) || '';
 }
 
 function saveNotes() {
@@ -1128,11 +1212,10 @@ function saveNotes() {
   }
 }
 
-// Auto-save notes setiap 2 detik setelah user berhenti ngetik
 let notesTimer = null;
 notesArea?.addEventListener('input', () => {
   clearTimeout(notesTimer);
-  notesTimer = setTimeout(saveNotes, 2000);
+  notesTimer = setTimeout(saveNotes, 2000);  // auto-save setelah 2 detik
 });
 
 document.getElementById('btnSaveNotes')?.addEventListener('click', saveNotes);
@@ -1150,6 +1233,7 @@ document.getElementById('btnClearNotes')?.addEventListener('click', () => {
   }
 });
 
-// Init
+// ========== INIT ==========
 loadNotes();
-renderTasks();
+renderShift('PAGI');
+renderShift('MALAM');
