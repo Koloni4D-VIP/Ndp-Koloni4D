@@ -490,58 +490,87 @@
         </div>
       </section>
     </section>
+    
     <section class="page" id="page-tasks">
   <div class="topbar">
     <div>
       <div class="page-eyebrow">PANEL TOOLS</div>
       <h1 class="page-title">📌 Daily Tasks & Notes</h1>
-      <p class="page-sub">Catat jobdesc harian & simpan catatan penting — otomatis tersimpan di browser</p>
+      <p class="page-sub">Checklist jobdesc per shift & catatan penting — otomatis tersimpan di browser</p>
     </div>
   </div>
 
-  <!-- ===== JOB DESC ===== -->
-  <div class="panel">
-    <h2>📋 Jobdesc Harian</h2>
+  <!-- ===== 2 TABEL BERDAMPINGAN ===== -->
+  <div class="shift-grid">
 
-    <div class="task-input-row">
-      <input type="text" id="taskInput" placeholder="Tulis jobdesc baru..." class="task-input">
-      <select id="taskPriority" class="task-select">
-        <option value="low">🟢 Low</option>
-        <option value="med" selected>🟡 Medium</option>
-        <option value="high">🔴 High</option>
-      </select>
-      <button class="btn-primary" id="btnAddTask">➕ Tambah</button>
+    <!-- ============ SHIFT PAGI ============ -->
+    <div class="shift-panel">
+      <div class="shift-header pagi">
+        <h2>🌅 SHIFT PAGI</h2>
+        <button class="btn-add-task" data-shift="PAGI">➕ Tambah</button>
+      </div>
+
+      <div class="shift-stats" id="statsPAGI"></div>
+
+      <div class="table-wrap shift-table-wrap">
+        <table class="tbl-shift" id="tblPAGI">
+          <thead>
+            <tr>
+              <th style="width: 40px;">NO</th>
+              <th>TUGAS HARIAN</th>
+              <th style="width: 90px;">STATUS</th>
+              <th style="width: 90px;">AKSI</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="shift-actions">
+        <button class="btn-mini" data-shift="PAGI" data-action="reset">🔄 Reset</button>
+        <button class="btn-mini" data-shift="PAGI" data-action="copy">📋 Copy</button>
+        <button class="btn-mini" data-shift="PAGI" data-action="excel">⬇️ Excel</button>
+        <button class="btn-mini btn-mini-danger" data-shift="PAGI" data-action="clear">🗑️ Hapus Semua</button>
+      </div>
     </div>
 
-    <div class="task-stats" id="taskStats"></div>
+    <!-- ============ SHIFT MALAM ============ -->
+    <div class="shift-panel">
+      <div class="shift-header malam">
+        <h2>🌙 SHIFT MALAM</h2>
+        <button class="btn-add-task" data-shift="MALAM">➕ Tambah</button>
+      </div>
 
-    <div class="table-wrap" style="max-height: 500px; margin-top: 12px;">
-      <table id="tblTasks">
-        <thead>
-          <tr>
-            <th style="width: 40px;">✓</th>
-            <th>Jobdesc</th>
-            <th style="width: 120px;">Prioritas</th>
-            <th style="width: 130px;">Tanggal</th>
-            <th style="width: 80px;">Aksi</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <div class="shift-stats" id="statsMALAM"></div>
+
+      <div class="table-wrap shift-table-wrap">
+        <table class="tbl-shift" id="tblMALAM">
+          <thead>
+            <tr>
+              <th style="width: 40px;">NO</th>
+              <th>TUGAS HARIAN</th>
+              <th style="width: 90px;">STATUS</th>
+              <th style="width: 90px;">AKSI</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="shift-actions">
+        <button class="btn-mini" data-shift="MALAM" data-action="reset">🔄 Reset</button>
+        <button class="btn-mini" data-shift="MALAM" data-action="copy">📋 Copy</button>
+        <button class="btn-mini" data-shift="MALAM" data-action="excel">⬇️ Excel</button>
+        <button class="btn-mini btn-mini-danger" data-shift="MALAM" data-action="clear">🗑️ Hapus Semua</button>
+      </div>
     </div>
 
-    <div class="actions" style="margin-top: 14px;">
-      <button class="btn-secondary" id="btnClearDone">🧹 Hapus yang Selesai</button>
-      <button class="btn-secondary" id="btnClearAllTasks">🗑️ Hapus Semua</button>
-      <button class="btn-copy" id="btnExportTasks">📋 Copy ke Clipboard</button>
-      <button class="btn-success" id="btnDownloadTasks">⬇️ Download Excel</button>
-    </div>
   </div>
 
-  <!-- ===== NOTES ===== -->
-  <div class="panel">
-    <h2>📝 Catatan / Notepad</h2>
-    <textarea id="notesArea" class="notes-area" placeholder="Tulis catatan penting di sini...&#10;&#10;Contoh:&#10;- Follow up user A&#10;- Cek duplikat deposit&#10;- Reminder meeting jam 3 sore"></textarea>
+  <!-- ===== NOTEPAD ===== -->
+  <div class="panel" style="margin-top: 18px;">
+    <h2>📝 Notepad / Catatan Penting</h2>
+    <textarea id="notesArea" class="notes-area" placeholder="Tulis catatan penting di sini...&#10;&#10;Contoh:&#10;- Follow up user A&#10;- Reminder meeting jam 3 sore&#10;- Password wifi baru: xxx"></textarea>
     <div class="actions" style="margin-top: 14px;">
       <button class="btn-primary" id="btnSaveNotes">💾 Save</button>
       <button class="btn-secondary" id="btnClearNotes">🗑️ Clear</button>
