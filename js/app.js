@@ -1017,7 +1017,7 @@ function renderShift(shift) {
           <span class="status-toggle ${done ? 'done' : 'no'}" 
                 data-shift="${shift}" 
                 data-idx="${i}">
-            ${done ? '✅ Done' : '❌ No'}
+            ${done ? '✅ Selesai' : 'Belum'}
           </span>
         </td>
         <td style="text-align:center;white-space:nowrap;">
