@@ -199,7 +199,7 @@ function prosesScd(rows) {
 
   rows.forEach(row => {
     const status = String(row['Status'] || row['status'] || '').toUpperCase();
-    if (!status.includes('APPROVED')) return;  
+    if (!status.includes('APPROVED') && !status.includes('DISETUJUI')) return;
 
     const user = bersihkanUsername(
       row['username'] || row['UserName'] || row['Username'] || '');
