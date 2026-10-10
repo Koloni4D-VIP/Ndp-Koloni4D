@@ -952,3 +952,204 @@ btnResetScd.addEventListener('click', () => {
   btnCopyScd.disabled = true;
   btnDownloadScd.disabled = true;
 });
+
+/* =========================================================
+   DAILY TASKS & NOTES (LocalStorage)
+   ========================================================= */
+const STORAGE_TASKS = 'daily_tasks_v1';
+const STORAGE_NOTES = 'daily_notes_v1';
+
+const taskInput    = document.getElementById('taskInput');
+const taskPriority = document.getElementById('taskPriority');
+const btnAddTask   = document.getElementById('btnAddTask');
+const tblTasksBody = document.querySelector('#tblTasks tbody');
+const taskStats    = document.getElementById('taskStats');
+const notesArea    = document.getElementById('notesArea');
+const notesStatus  = document.getElementById('notesStatus');
+
+let tasks = JSON.parse(localStorage.getItem(STORAGE_TASKS) || '[]');
+
+// ========== RENDER TASKS ==========
+function renderTasks() {
+  if (!tasks.length) {
+    tblTasksBody.innerHTML = `<tr><td colspan="5" class="empty-msg">Belum ada jobdesc. Tambahkan di atas! 📝</td></tr>`;
+    taskStats.textContent = '';
+    return;
+  }
+
+  tblTasksBody.innerHTML = tasks.map((t, i) => `
+    <tr class="task-row ${t.done ? 'done' : ''}">
+      <td style="text-align:center;">
+        <input type="checkbox" class="task-checkbox" data-idx="${i}" ${t.done ? 'checked' : ''}>
+      </td>
+      <td class="task-text">${escapeHtml(t.text)}</td>
+      <td><span class="task-badge ${t.priority}">${
+        t.priority === 'low' ? '🟢 Low' : t.priority === 'med' ? '🟡 Medium' : '🔴 High'
+      }</span></td>
+      <td class="task-date">${t.date || '-'}</td>
+      <td style="text-align:center;">
+        <button class="btn-delete-task" data-idx="${i}" title="Hapus">🗑️</button>
+      </td>
+    </tr>
+  `).join('');
+
+  // Stats
+  const total = tasks.length;
+  const done  = tasks.filter(t => t.done).length;
+  const high  = tasks.filter(t => !t.done && t.priority === 'high').length;
+  taskStats.innerHTML = `
+    Total: <b>${total}</b> &nbsp;|&nbsp;
+    Selesai: <b style="color:var(--green)">${done}</b> &nbsp;|&nbsp;
+    Pending: <b style="color:var(--orange)">${total - done}</b> &nbsp;|&nbsp;
+    Prioritas Tinggi: <b style="color:#dc2626">${high}</b>
+  `;
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function saveTasks() {
+  localStorage.setItem(STORAGE_TASKS, JSON.stringify(tasks));
+  renderTasks();
+}
+
+// ========== ADD TASK ==========
+function addTask() {
+  const text = taskInput.value.trim();
+  if (!text) return;
+
+  const now = new Date();
+  const tgl = now.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+  tasks.unshift({
+    text: text,
+    priority: taskPriority.value,
+    done: false,
+    date: tgl,
+  });
+
+  taskInput.value = '';
+  taskInput.focus();
+  saveTasks();
+}
+
+btnAddTask?.addEventListener('click', addTask);
+taskInput?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') addTask();
+});
+
+// ========== TOGGLE / DELETE (Event Delegation) ==========
+tblTasksBody?.addEventListener('click', (e) => {
+  // Toggle done
+  if (e.target.classList.contains('task-checkbox')) {
+    const idx = Number(e.target.dataset.idx);
+    tasks[idx].done = e.target.checked;
+    saveTasks();
+  }
+  // Delete
+  if (e.target.classList.contains('btn-delete-task')) {
+    const idx = Number(e.target.dataset.idx);
+    if (confirm('Hapus jobdesc ini?')) {
+      tasks.splice(idx, 1);
+      saveTasks();
+    }
+  }
+});
+
+// ========== CLEAR ==========
+document.getElementById('btnClearDone')?.addEventListener('click', () => {
+  const doneCount = tasks.filter(t => t.done).length;
+  if (!doneCount) return alert('Tidak ada jobdesc yang selesai.');
+  if (confirm(`Hapus ${doneCount} jobdesc yang sudah selesai?`)) {
+    tasks = tasks.filter(t => !t.done);
+    saveTasks();
+  }
+});
+
+document.getElementById('btnClearAllTasks')?.addEventListener('click', () => {
+  if (!tasks.length) return;
+  if (confirm('Hapus SEMUA jobdesc? Tindakan ini tidak bisa dibatalkan.')) {
+    tasks = [];
+    saveTasks();
+  }
+});
+
+// ========== COPY & DOWNLOAD ==========
+document.getElementById('btnExportTasks')?.addEventListener('click', async () => {
+  if (!tasks.length) return;
+  const tsv = tasks.map(t =>
+    `${t.done ? '[✓]' : '[ ]'}\t${t.text}\t${t.priority}\t${t.date || ''}`
+  ).join('\n');
+  try {
+    await navigator.clipboard.writeText(tsv);
+    alert('📋 Data jobdesc di-copy! Paste ke mana saja.');
+  } catch (err) {
+    alert('Gagal copy: ' + err.message);
+  }
+});
+
+document.getElementById('btnDownloadTasks')?.addEventListener('click', () => {
+  if (!tasks.length) return;
+  const wb = XLSX.utils.book_new();
+  const data = tasks.map((t, i) => ({
+    'NO': i + 1,
+    'STATUS': t.done ? 'SELESAI' : 'PENDING',
+    'JOBDESC': t.text,
+    'PRIORITAS': t.priority.toUpperCase(),
+    'TANGGAL': t.date || '',
+  }));
+  const ws = XLSX.utils.json_to_sheet(data);
+  ws['!cols'] = [{ wch: 6 }, { wch: 12 }, { wch: 50 }, { wch: 12 }, { wch: 14 }];
+  XLSX.utils.book_append_sheet(wb, ws, 'Jobdesc');
+  const tgl = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `jobdesc_${tgl}.xlsx`);
+});
+
+// ========== NOTES ==========
+function loadNotes() {
+  if (notesArea) {
+    notesArea.value = localStorage.getItem(STORAGE_NOTES) || '';
+  }
+}
+
+function saveNotes() {
+  if (!notesArea) return;
+  localStorage.setItem(STORAGE_NOTES, notesArea.value);
+  if (notesStatus) {
+    notesStatus.textContent = '✅ Tersimpan!';
+    notesStatus.classList.add('show');
+    setTimeout(() => notesStatus.classList.remove('show'), 1500);
+  }
+}
+
+// Auto-save notes setiap 2 detik setelah user berhenti ngetik
+let notesTimer = null;
+notesArea?.addEventListener('input', () => {
+  clearTimeout(notesTimer);
+  notesTimer = setTimeout(saveNotes, 2000);
+});
+
+document.getElementById('btnSaveNotes')?.addEventListener('click', saveNotes);
+
+document.getElementById('btnClearNotes')?.addEventListener('click', () => {
+  if (!notesArea.value.trim()) return;
+  if (confirm('Hapus semua catatan?')) {
+    notesArea.value = '';
+    localStorage.removeItem(STORAGE_NOTES);
+    if (notesStatus) {
+      notesStatus.textContent = '🗑️ Catatan dihapus.';
+      notesStatus.classList.add('show');
+      setTimeout(() => notesStatus.classList.remove('show'), 1500);
+    }
+  }
+});
+
+// Init
+loadNotes();
+renderTasks();
