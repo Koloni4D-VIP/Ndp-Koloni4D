@@ -1187,7 +1187,54 @@ document.getElementById('btnClearNotes')?.addEventListener('click', () => {
   }
 });
 
-// ========== INIT ==========
+document.querySelectorAll('.btn-reload-shift').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const shift = btn.dataset.shift;
+    const list = taskData[shift] || [];
+
+    // Hitung berapa yang status "DONE"
+    const doneCount = list.filter(t => t.status === 'DONE').length;
+
+    // Kalau tidak ada yang "Selesai", kasih info & stop
+    if (doneCount === 0) {
+      btn.textContent = '✓ Tidak ada';
+      setTimeout(() => { btn.textContent = '🔄 Reload'; }, 1200);
+      return;
+    }
+
+    // Konfirmasi biar tidak salah klik
+    const konfirmasi = confirm(
+      `Reload SHIFT ${shift}?\n\n` +
+      `${doneCount} tugas berstatus "Selesai" akan dikembalikan ke "Belum".\n` +
+      `Teks tugas TIDAK dihapus.`
+    );
+    if (!konfirmasi) return;
+
+    // Animasi spin
+    btn.classList.add('spinning');
+    btn.textContent = '⏳';
+
+    // Reset status DONE → NO, hapus doneAt
+    list.forEach(item => {
+      if (item.status === 'DONE') {
+        item.status = 'NO';
+        item.doneAt = '';
+      }
+    });
+
+    // Simpan & render ulang HANYA shift ini
+    localStorage.setItem(STORAGE_TASKS_V5, JSON.stringify(taskData));
+    renderShift(shift);
+
+    // Feedback visual
+    setTimeout(() => {
+      btn.classList.remove('spinning');
+      btn.textContent = '✅ ' + doneCount;
+      setTimeout(() => { btn.textContent = '🔄 Reload'; }, 1200);
+    }, 600);
+  });
+});
+
 loadNotes();
 renderShift('PAGI');
 renderShift('MALAM');
