@@ -829,3 +829,48 @@ body.dark .notes-area {
   align-self: center;
 }
 .notes-status.show { opacity: 1; }
+
+.shift-header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-reload-shift {
+  background: #f59e0b;
+  color: #fff;
+  border: none;
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: 0.2s;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.btn-reload-shift:hover {
+  background: #d97706;
+  transform: scale(1.03);
+}
+.btn-reload-shift:active {
+  transform: scale(0.97);
+}
+.btn-reload-shift.spinning {
+  animation: spinReload 0.6s linear;
+  pointer-events: none;
+}
+@keyframes spinReload {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Dark mode */
+body.dark .btn-reload-shift {
+  background: #b45309;
+}
+body.dark .btn-reload-shift:hover {
+  background: #d97706;
+}
