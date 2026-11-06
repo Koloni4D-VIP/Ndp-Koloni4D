@@ -937,16 +937,16 @@ body.dark .btn-reload-shift:hover {
 #tblHasilScd td:nth-child(1) { width: 6%;  text-align: center; } /* No */
 
 #tblHasilScd th:nth-child(2), 
-#tblHasilScd td:nth-child(2) { width: 25%; text-align: left; }   /* Username */
+#tblHasilScd td:nth-child(2) { width: 10%; text-align: left; }   /* Username */
 
 #tblHasilScd th:nth-child(3), 
-#tblHasilScd td:nth-child(3) { width: 25%; text-align: right; }  /* Total Transaksi */
+#tblHasilScd td:nth-child(3) { width: 10%; text-align: right; }  /* Total Transaksi */
 
 #tblHasilScd th:nth-child(4), 
 #tblHasilScd td:nth-child(4) { width: 15%; text-align: center; } /* Jumlah Transaksi */
 
 #tblHasilScd th:nth-child(5), 
-#tblHasilScd td:nth-child(5) { width: 29%; text-align: center; } /* Kategori */
+#tblHasilScd td:nth-child(5) { width: 20%; text-align: center; } /* Kategori */
 
 /* 4. Memperbaiki Badge Kategori di Tabel SUNGLAP agar sejajar */
 #tblHasilScd td span.tag, 
