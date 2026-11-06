@@ -511,20 +511,62 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   max-height: 600px; overflow-y: auto;
   box-shadow: 0 2px 6px rgba(0,0,0,0.06);
 }
-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+table { 
+  width: 100%; 
+  border-collapse: collapse; 
+  font-size: 0.88rem; 
+  table-layout: fixed; /* KUNCI 1: Agar lebar kolom tidak berubah-ubah */
+}
 th, td {
-  padding: 10px 12px; text-align: left;
-  border-bottom: 1px solid #e2e8f0; white-space: nowrap;
+  padding: 10px 12px; 
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0; 
+  white-space: normal; /* KUNCI 2: Mengizinkan teks turun baris jika terlalu panjang */
+  vertical-align: middle; /* Agar teks sejajar di tengah secara vertikal */
+  word-wrap: break-word; /* Memotong kata yang terlalu panjang */
 }
 th {
   background: #1e3a8a; color: #fff;
   position: sticky; top: 0; z-index: 1; font-weight: 600;
+  text-align: center; /* Judul tabel jadi rata tengah */
 }
 tr:hover { background: #f1f5f9; }
-.num { text-align: right; font-variant-numeric: tabular-nums; }
-.zero { color: #cbd5e1; }
-.has-value { color: var(--green); font-weight: 600; }
-.hidden { display: none; }
+
+/* KUNCI 3: Pengaturan Lebar & Perataan Spesifik per Kolom */
+/* (Ini akan otomatis berlaku untuk tabel SCB Detection Anda) */
+
+/* Kolom No (Kolom ke-1) */
+td:nth-child(1) { 
+  text-align: center; 
+  width: 50px; 
+}
+/* Kolom Username (Kolom ke-2) */
+td:nth-child(2) { 
+  text-align: left; 
+  white-space: normal; /* Username boleh turun baris jika panjang */
+}
+/* Kolom Total Transaksi (Kolom ke-3) */
+td:nth-child(3) { 
+  text-align: right; 
+  font-variant-numeric: tabular-nums; 
+  width: 150px;
+}
+/* Kolom Jumlah Transaksi (Kolom ke-4) */
+td:nth-child(4) { 
+  text-align: center; 
+  width: 120px;
+}
+/* Kolom Kategori (Kolom ke-5) */
+td:nth-child(5) { 
+  text-align: center; 
+  width: 130px;
+}
+
+/* Memperbaiki class .num yang sudah ada agar rata kanan */
+.num { 
+  text-align: right !important; 
+  font-variant-numeric: tabular-nums; 
+}
 
 .tag {
   display: inline-block; padding: 2px 10px; border-radius: 12px;
@@ -867,10 +909,20 @@ body.dark .notes-area {
   to   { transform: rotate(360deg); }
 }
 
-/* Dark mode */
 body.dark .btn-reload-shift {
   background: #b45309;
 }
 body.dark .btn-reload-shift:hover {
   background: #d97706;
+}
+
+td span.tag, 
+td span.filter-badge {
+  display: inline-block;
+  min-width: 85px; /* Memaksa lebar semua badge sama */
+  text-align: center;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
 }
