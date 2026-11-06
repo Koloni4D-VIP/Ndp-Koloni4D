@@ -192,66 +192,73 @@ function prosesQris(rows) {
 }
 
 /* ---------- SCB DETECTION ---------- */
-function prosesScd(rows) {
-  const userMap = new Map(); 
-  let totalNominalAll = 0;   
-  let scbRowCount = 0;       
+function prosesScd(rows, acuanUsers = null) {
+  const userMap = new Map();
+  let totalNominalAll = 0;
 
   rows.forEach(row => {
     const status = String(row['Status'] || row['status'] || '').toUpperCase();
     if (!status.includes('APPROVED') && !status.includes('DISETUJUI')) return;
 
     const user = bersihkanUsername(
-      row['username'] || row['UserName'] || row['Username'] || '');
-
+      row['username'] || row['UserName'] || row['Username'] || ''
+    );
     if (!user) return;
 
-    const toBank = String(row['tobank'] || row['ToBank'] || '').toUpperCase();
+    const toBank = String(row['tobank'] || row['ToBank'] || '')
+      .replace(/\s+/g, ' ')
+      .toUpperCase();
     const nominal = parseTotal(row['total'] || row['Total'] || 0);
 
-    const isScb = toBank.includes('SCB');
+    const isScb = toBank.includes('SCB') && toBank.includes('SPESIAL COSTUMER BONUS');
 
     totalNominalAll += nominal;
 
     if (!userMap.has(user)) {
-      userMap.set(user, {
-        username: user,
-        total: 0,
-        scbCount: 0,       
-        trxCount: 0,     
-        transaksi: []     
-      });
+      userMap.set(user, { username: user, total: 0, scbCount: 0, trxCount: 0 });
     }
     const item = userMap.get(user);
     item.total += nominal;
-    item.trxCount++;       
-
-    if (isScb) {
-      item.scbCount++;
-      scbRowCount++;
-      item.transaksi.push({ nominal, toBank: toBank.split('\n')[0].trim() });
-    }
+    item.trxCount++; // <--- PASTIKAN INI ADA
+    if (isScb) item.scbCount++;
   });
 
-  const allUsers   = userMap.size;
-  const sudahScbArr = Array.from(userMap.values()).filter(u => u.scbCount > 0);
-  const belumScbArr = Array.from(userMap.values()).filter(u => u.scbCount === 0);
-  const doubleScbArr = Array.from(userMap.values()).filter(u => u.scbCount >= 2);
+  const allUsers = Array.from(userMap.values());
+  const sudahScb1xArr = allUsers.filter(u => u.scbCount === 1);
+  const doubleScbArr  = allUsers.filter(u => u.scbCount >= 2);
+
+  let belumScbArr;
+  if (acuanUsers && acuanUsers.length) {
+    belumScbArr = acuanUsers
+      .filter(u => {
+        const dep = userMap.get(u.username);
+        return !dep || dep.scbCount === 0;
+      })
+      .map(u => {
+        const dep = userMap.get(u.username);
+        return {
+          username: u.username,
+          total: dep ? dep.total : 0,
+          trxCount: dep ? dep.trxCount : 0,
+          scbCount: 0
+        };
+      });
+  } else {
+    belumScbArr = allUsers.filter(u => u.scbCount === 0);
+  }
 
   window._scdData = {
-    all: Array.from(userMap.values()),
-    belumScb: belumScbArr.map(u => ({ ...u, kategori: 'BELUM SCB' })),
-    sudahScb: sudahScbArr.map(u => ({ ...u, kategori: 'SUDAH SCB' })),
-    doubleScb: doubleScbArr.map(u => ({ ...u, kategori: 'DOUBLE SCB' })),
+    belumScb: belumScbArr,
+    sudahScb: sudahScb1xArr,
+    doubleScb: doubleScbArr,
   };
-
+  
   window._scdStats = {
-    totalUser: allUsers,
+    totalUser: allUsers.length,
     belumScb: belumScbArr.length,
-    sudahScb: scbRowCount,          
-    sudahScbUser: sudahScbArr.length, 
-    doubleScb: doubleScbArr.length,   
-    totalNominal: totalNominalAll,    
+    sudahScb: sudahScb1xArr.length + doubleScbArr.length,
+    doubleScb: doubleScbArr.length,
+    totalNominal: totalNominalAll,
   };
 
   return belumScbArr
