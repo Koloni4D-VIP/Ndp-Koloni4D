@@ -13,10 +13,41 @@ function parseAcuan(text) {
 
   return rows.slice(1)
     .filter(r => r[idxUser] && r[idxUser].trim())
-    .map(r => ({
-      username: Processor.bersihkanUsername(r[idxUser]),   
-      registerDate: idxDate >= 0 ? String(r[idxDate] || '').trim() : ''
-    }));
+    .map(r => {
+      let tglMentah = idxDate >= 0 ? String(r[idxDate] || '').trim() : '';
+      let tglRapi = tglMentah;
+
+      // Jika formatnya dikenali sebagai tanggal (contoh: "2023-10-25 14:30:15" atau "10/25/2023 2:30 PM")
+      if (tglMentah && !isNaN(new Date(tglMentah).getTime())) {
+        const d = new Date(tglMentah);
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const yyyy = d.getFullYear();
+        const hh = String(d.getHours()).padStart(2, '0');
+        const min = String(d.getMinutes()).padStart(2, '0');
+        const ss = String(d.getSeconds()).padStart(2, '0');
+        
+        // Hasil: 25/10/2023 14:30:15
+        tglRapi = `${dd}/${mm}/${yyyy} ${hh}:${min}:${ss}`;
+      } 
+      // Jika file CSV-nya formatnya pakai Excel Date (angka serial, misal 45123.604)
+      else if (tglMentah && !isNaN(Number(tglMentah)) && Number(tglMentah) > 25000) {
+        const excelEpoch = new Date(1899, 11, 30);
+        const d = new Date(excelEpoch.getTime() + (Number(tglMentah) * 86400000));
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const yyyy = d.getFullYear();
+        const hh = String(d.getHours()).padStart(2, '0');
+        const min = String(d.getMinutes()).padStart(2, '0');
+        const ss = String(d.getSeconds()).padStart(2, '0');
+        tglRapi = `${dd}/${mm}/${yyyy} ${hh}:${min}:${ss}`;
+      }
+
+      return {
+        username: Processor.bersihkanUsername(r[idxUser]),   
+        registerDate: tglRapi
+      };
+    });
 }
 
 function parseDeposit(text) {
