@@ -512,63 +512,23 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   box-shadow: 0 2px 6px rgba(0,0,0,0.06);
 }
 
-table { 
-  width: 100%; 
-  border-collapse: collapse; 
-  font-size: 0.88rem; 
-  table-layout: fixed; /* Kunci agar lebar kolom konsisten */
-}
-
-/* 2. Pengaturan Sel (Kunci agar sejajar lurus) */
+/* =========================================
+   TABEL GLOBAL (KEMBALI NORMAL)
+   ========================================= */
+table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
 th, td {
-  padding: 10px 12px; 
-  border-bottom: 1px solid #e2e8f0; 
-  white-space: normal; 
-  vertical-align: middle !important; /* KUNCI: Memaksa semua teks di tengah secara vertikal */
-  word-wrap: break-word; 
-  overflow: hidden; /* Mencegah teks meluber keluar kolom */
-  text-overflow: ellipsis; /* Menambahkan titik-titik (...) jika teks kepanjangan */
+  padding: 10px 12px; text-align: left;
+  border-bottom: 1px solid #e2e8f0; white-space: nowrap;
 }
-
-/* 3. Header Tabel */
 th {
-  background: #1e3a8a; 
-  color: #fff;
-  position: sticky; 
-  top: 0; 
-  z-index: 1; 
-  font-weight: 600;
-  text-align: center; 
+  background: #1e3a8a; color: #fff;
+  position: sticky; top: 0; z-index: 1; font-weight: 600;
 }
-
-/* 4. Pengaturan Lebar Kolom Spesifik (Agar Proporsional) */
-/* Sesuaikan persentase ini dengan tabel SCB Detection Anda */
-th:nth-child(1), td:nth-child(1) { width: 6%; text-align: center; }  /* No */
-th:nth-child(2), td:nth-child(2) { width: 10%; text-align: left; }   /* Username */
-th:nth-child(3), td:nth-child(3) { width: 10%; text-align: right; }  /* Total Transaksi */
-th:nth-child(4), td:nth-child(4) { width: 10%; text-align: center; } /* Jumlah Transaksi */
-th:nth-child(5), td:nth-child(5) { width: 20%; text-align: center; } /* Kategori */
-
-/* 5. Class tambahan */
-.num { 
-  text-align: center !important; 
-  font-variant-numeric: tabular-nums; 
-  padding-right: 20px !important; /* Memberi jarak angka ke garis kanan */
-}
-
-/* 6. Memperbaiki Badge Kategori agar sejajar */
-td span.tag, 
-td span.filter-badge {
-  display: inline-flex;      /* Menggunakan flex agar teks pas di tengah */
-  align-items: center;
-  justify-content: center;
-  min-width: 90px; 
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  margin: 0 auto;            /* Memastikan badge ada di tengah kolom */
-}
+tr:hover { background: #f1f5f9; }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+.zero { color: #cbd5e1; }
+.has-value { color: var(--green); font-weight: 600; }
+.hidden { display: none; }
 
 .tag {
   display: inline-block; padding: 2px 10px; border-radius: 12px;
@@ -918,17 +878,6 @@ body.dark .btn-reload-shift:hover {
   background: #d97706;
 }
 
-td span.tag, 
-td span.filter-badge {
-  display: inline-block;
-  min-width: 85px; /* Memaksa lebar semua badge sama */
-  text-align: center;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
 /* =========================================
    PERBAIKAN TAMPILAN TABEL SHIFT (TASKS)
    ========================================= */
@@ -960,4 +909,55 @@ td span.filter-badge {
   overflow-wrap: break-word !important;
   overflow-x: hidden !important; /* Hilangkan scroll horizontal di notepad */
   line-height: 1.6;
+}
+
+/* =========================================================
+   PENGATURAN KHUSUS HANYA UNTUK TABEL SUNGLAP (SCB DETECTION)
+   ========================================================= */
+
+/* 1. Kunci layout HANYA untuk tabel ini */
+#tblHasilScd {
+  table-layout: fixed;
+  width: 100%;
+}
+
+/* 2. Pengaturan sel HANYA untuk tabel ini */
+#tblHasilScd th, 
+#tblHasilScd td {
+  white-space: normal; /* Izinkan teks turun baris */
+  vertical-align: middle !important; /* Teks rata tengah vertikal */
+  word-wrap: break-word;
+  padding: 12px 10px; /* Sedikit lebih lega */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 3. Lebar dan Perataan Kolom Spesifik (Hanya untuk SUNGLAP) */
+#tblHasilScd th:nth-child(1), 
+#tblHasilScd td:nth-child(1) { width: 6%;  text-align: center; } /* No */
+
+#tblHasilScd th:nth-child(2), 
+#tblHasilScd td:nth-child(2) { width: 25%; text-align: left; }   /* Username */
+
+#tblHasilScd th:nth-child(3), 
+#tblHasilScd td:nth-child(3) { width: 25%; text-align: right; }  /* Total Transaksi */
+
+#tblHasilScd th:nth-child(4), 
+#tblHasilScd td:nth-child(4) { width: 15%; text-align: center; } /* Jumlah Transaksi */
+
+#tblHasilScd th:nth-child(5), 
+#tblHasilScd td:nth-child(5) { width: 29%; text-align: center; } /* Kategori */
+
+/* 4. Memperbaiki Badge Kategori di Tabel SUNGLAP agar sejajar */
+#tblHasilScd td span.tag, 
+#tblHasilScd td span.filter-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 90px; 
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin: 0 auto;
 }
