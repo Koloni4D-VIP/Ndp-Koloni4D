@@ -1,11 +1,12 @@
 /* =========================================================
-   parser.js — Parser untuk Audit NDP
+   parser.js — Parser untuk Audit NDP (Versi Perbaikan Tanggal)
    ========================================================= */
 function parseAcuan(text) {
   const rows = parseCSV(text);
   if (!rows.length) return [];
 
-  const headers = rows[0].map(h => h.trim().toLowerCase());
+  // Cari header
+  const headers = rows[0].map(h => String(h).replace(/"/g, '').trim().toLowerCase());
   const idxUser = headers.findIndex(h => h.includes('username') || h.includes('user id') || h === 'user');
   const idxDate = headers.findIndex(h => h.includes('register') || h.includes('date') || h.includes('tanggal') || h.includes('daftar'));
 
@@ -14,37 +15,30 @@ function parseAcuan(text) {
   return rows.slice(1)
     .filter(r => r[idxUser] && r[idxUser].trim())
     .map(r => {
+      let usernameMentah = String(r[idxUser] || '');
       let tglMentah = idxDate >= 0 ? String(r[idxDate] || '').trim() : '';
-      let tglRapi = tglMentah;
+      
+      // 1. Bersihkan Username (Ambil baris pertama saja)
+      let usernameBersih = usernameMentah.split('\n')[0].replace(/"/g, '').trim();
 
-      // Jika formatnya dikenali sebagai tanggal (contoh: "2023-10-25 14:30:15" atau "10/25/2023 2:30 PM")
-      if (tglMentah && !isNaN(new Date(tglMentah).getTime())) {
-        const d = new Date(tglMentah);
-        const dd = String(d.getDate()).padStart(2, '0');
-        const mm = String(d.getMonth() + 1).padStart(2, '0');
-        const yyyy = d.getFullYear();
-        const hh = String(d.getHours()).padStart(2, '0');
-        const min = String(d.getMinutes()).padStart(2, '0');
-        const ss = String(d.getSeconds()).padStart(2, '0');
+      // 2. Ekstrak Tanggal & Waktu menggunakan Regex
+      let tglRapi = tglMentah;
+      // Mencari pola: DD/MM/YYYY atau MM/DD/YYYY diikuti spasi dan Jam:Menit:Detik
+      const matchDate = tglMentah.match(/(\d{1,2}\/\d{1,2}\/\d{4})\s+(\d{1,2}:\d{2}(?::\d{2})?)/);
+      
+      if (matchDate) {
+        // Jika ketemu, gabungkan tanggal dan jamnya
+        tglRapi = `${matchDate[1]} ${matchDate[2]}`;
         
-        // Hasil: 25/10/2023 14:30:15
-        tglRapi = `${dd}/${mm}/${yyyy} ${hh}:${min}:${ss}`;
-      } 
-      // Jika file CSV-nya formatnya pakai Excel Date (angka serial, misal 45123.604)
-      else if (tglMentah && !isNaN(Number(tglMentah)) && Number(tglMentah) > 25000) {
-        const excelEpoch = new Date(1899, 11, 30);
-        const d = new Date(excelEpoch.getTime() + (Number(tglMentah) * 86400000));
-        const dd = String(d.getDate()).padStart(2, '0');
-        const mm = String(d.getMonth() + 1).padStart(2, '0');
-        const yyyy = d.getFullYear();
-        const hh = String(d.getHours()).padStart(2, '0');
-        const min = String(d.getMinutes()).padStart(2, '0');
-        const ss = String(d.getSeconds()).padStart(2, '0');
-        tglRapi = `${dd}/${mm}/${yyyy} ${hh}:${min}:${ss}`;
+        // Opsional: Ubah format ke DD/MM/YYYY HH:mm:ss
+        // (Karena format file Anda MM/DD/YYYY, kita biarkan apa adanya agar tidak salah baca)
+      } else {
+        // Jika tidak ada jam (hanya tanggal), biarkan saja
+        tglRapi = tglMentah.replace(/"/g, '').split('\n')[0].trim();
       }
 
       return {
-        username: Processor.bersihkanUsername(r[idxUser]),   
+        username: Processor.bersihkanUsername(usernameBersih),   
         registerDate: tglRapi
       };
     });
@@ -54,23 +48,24 @@ function parseDeposit(text) {
   const rows = parseCSV(text);
   if (!rows.length) return [];
 
-  // Normalisasi header: lowercase, buang spasi/underscore
   const headers = rows[0].map(h =>
-    String(h).trim().toLowerCase().replace(/[\s_]+/g, '')
+    String(h).replace(/"/g, '').trim().toLowerCase().replace(/[\s_]+/g, '')
   );
 
   return rows.slice(1)
     .filter(r => r.some(c => c && c.trim()))
     .map(r => {
       const obj = {};
-      headers.forEach((h, i) => obj[h] = r[i] || '');
+      headers.forEach((h, i) => obj[h] = (r[i] || '').replace(/"/g, '').trim());
       return obj;
     });
 }
 
+// Fungsi parseCSV yang lebih pintar (Tidak memotong baris baru di dalam sel)
 function parseCSV(text) {
   text = text.replace(/^\uFEFF/, '');
 
+  // Hapus baris "sep=;"
   text = text.split('\n')
     .filter(line => !line.trim().startsWith('sep='))
     .join('\n');
@@ -87,19 +82,24 @@ function parseCSV(text) {
     if (inQuotes) {
       if (ch === '"' && next === '"') { field += '"'; i++; }
       else if (ch === '"') { inQuotes = false; }
-      else { field += ch; }
+      else { field += ch; } // Biarkan enter (\n) masuk ke dalam field
     } else {
       if (ch === '"') { inQuotes = true; }
       else if (ch === ',') { current.push(field); field = ''; }
-      else if (ch === '\n') {
-        current.push(field);
-        rows.push(current);
+      else if (ch === '\n' || ch === '\r') {
+        // Abaikan baris kosong
+        if (field.trim() || current.length > 0) {
+          current.push(field);
+          rows.push(current);
+        }
         current = [];
         field = '';
-      } else if (ch === '\r') { /* skip */ }
+        if (ch === '\r' && next === '\n') i++; // Skip \r\n
+      } 
       else { field += ch; }
     }
   }
+  
   if (field || current.length) {
     current.push(field);
     rows.push(current);
