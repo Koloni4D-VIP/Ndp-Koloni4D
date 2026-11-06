@@ -173,15 +173,24 @@ function renderHasil() {
   document.getElementById('kpiFreebetRp').textContent = 'Rp ' + totalFreebet.toLocaleString('id-ID');
 
   const tbody = document.querySelector('#tblHasil tbody');
-  tbody.innerHTML = hasilFinal.map(r => `
-    <tr>
-      <td>${r.no}</td>
-      <td>${r.registerDate || '-'}</td>
-      <td>${r.username}</td>
-      <td class="num ${r.depo > 0 ? 'has-value' : 'zero'}">${r.depo > 0 ? 'Rp ' + r.depo.toLocaleString('id-ID') : 'Rp 0'}</td>
-      <td class="num ${r.freebet > 0 ? 'has-value' : 'zero'}">${r.freebet > 0 ? 'Rp ' + r.freebet.toLocaleString('id-ID') : 'Rp 0'}</td>
-    </tr>
-  `).join('');
+  tbody.innerHTML = list.map((r, i) => {
+    const badgeCls = r.kategori === 'DOUBLE SCB' ? 'lucky'
+                   : r.kategori === 'SUDAH SCB'  ? 'freebet'
+                   : 'other';
+    const badgeText = r.kategori === 'DOUBLE SCB' ? `DOUBLE SCB (${r.scbCount}x)`
+                    : r.kategori === 'SUDAH SCB'  ? `SUDAH SCB (${r.scbCount}x)`
+                    : 'BELUM SCB';
+    return `
+      <tr>
+        <td>${i + 1}</td>
+        <td>${r.username}</td>
+        <td class="num">${fmtRpScd(r.total)}</td>
+        <td class="num">${r.trxCount || 0}x</td> 
+        <td><span class="tag ${badgeCls}">${badgeText}</span></td>
+      </tr>
+    `;
+  }).join('');
+
 }
 
 btnCopy.addEventListener('click', async () => {
