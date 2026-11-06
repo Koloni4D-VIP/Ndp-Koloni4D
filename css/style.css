@@ -551,7 +551,7 @@ th:nth-child(5), td:nth-child(5) { width: 20%; text-align: center; } /* Kategori
 
 /* 5. Class tambahan */
 .num { 
-  text-align: center !important; 
+  text-align: right !important; 
   font-variant-numeric: tabular-nums; 
   padding-right: 20px !important; /* Memberi jarak angka ke garis kanan */
 }
