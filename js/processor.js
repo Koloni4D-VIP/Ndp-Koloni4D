@@ -240,9 +240,9 @@ function prosesScd(rows) {
 
   window._scdData = {
     all: Array.from(userMap.values()),
-    belumScb: belumScbArr,
-    sudahScb: sudahScbArr,
-    doubleScb: doubleScbArr,
+    belumScb: belumScbArr.map(u => ({ ...u, kategori: 'BELUM SCB' })),
+    sudahScb: sudahScbArr.map(u => ({ ...u, kategori: 'SUDAH SCB' })),
+    doubleScb: doubleScbArr.map(u => ({ ...u, kategori: 'DOUBLE SCB' })),
   };
 
   window._scdStats = {
