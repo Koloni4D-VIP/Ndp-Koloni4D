@@ -525,7 +525,7 @@ th {
   position: sticky; top: 0; z-index: 1; font-weight: 600;
 }
 tr:hover { background: #f1f5f9; }
-.num { text-align: right; font-variant-numeric: tabular-nums; }
+.num { text-align: left; font-variant-numeric: tabular-nums; }
 .zero { color: #cbd5e1; }
 .has-value { color: var(--green); font-weight: 600; }
 .hidden { display: none; }
