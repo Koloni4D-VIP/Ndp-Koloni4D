@@ -84,9 +84,9 @@ fileAcuan.addEventListener('change', (e) => {
         text = evt.target.result;
       } else {
         const data = new Uint8Array(evt.target.result);
-        const wb = XLSX.read(data, { type: 'array' });
+        const wb = XLSX.read(data, { type: 'array', cellDates: false, raw: true });
         const sheet = wb.Sheets[wb.SheetNames[0]];
-        text = XLSX.utils.sheet_to_csv(sheet);
+        text = XLSX.utils.sheet_to_csv(sheet, { rawNumbers: false });
       }
       acuanUsers = Parser.parseAcuan(text);
       nameAcuan.textContent = '✅ ' + f.name;
@@ -124,9 +124,9 @@ fileDeposit.addEventListener('change', (e) => {
         text = evt.target.result;
       } else {
         const data = new Uint8Array(evt.target.result);
-        const wb = XLSX.read(data, { type: 'array' });
+        const wb = XLSX.read(data, { type: 'array', cellDates: false, raw: true });
         const sheet = wb.Sheets[wb.SheetNames[0]];
-        text = XLSX.utils.sheet_to_csv(sheet);
+        text = XLSX.utils.sheet_to_csv(sheet, { rawNumbers: false });
       }
       depositRows = Parser.parseDeposit(text);
       console.log('HEADER:', Object.keys(depositRows[0] || {}));
