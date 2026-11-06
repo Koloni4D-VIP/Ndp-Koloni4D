@@ -218,11 +218,13 @@ function prosesScd(rows) {
         username: user,
         total: 0,
         scbCount: 0,       
+        trxCount: 0,     
         transaksi: []     
       });
     }
     const item = userMap.get(user);
     item.total += nominal;
+    item.trxCount++;       
 
     if (isScb) {
       item.scbCount++;
@@ -254,7 +256,12 @@ function prosesScd(rows) {
 
   return belumScbArr
     .sort((a, b) => b.total - a.total)
-    .map((item, i) => ({ no: i + 1, username: item.username, total: item.total }));
+    .map((item, i) => ({ 
+      no: i + 1, 
+      username: item.username, 
+      total: item.total,
+      trxCount: item.trxCount 
+    }));
 }
 
 window.Processor = {
