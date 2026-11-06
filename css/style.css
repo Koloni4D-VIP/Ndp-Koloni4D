@@ -551,7 +551,7 @@ th:nth-child(5), td:nth-child(5) { width: 20%; text-align: center; } /* Kategori
 
 /* 5. Class tambahan */
 .num { 
-  text-align: right !important; 
+  text-align: center !important; 
   font-variant-numeric: tabular-nums; 
   padding-right: 20px !important; /* Memberi jarak angka ke garis kanan */
 }
@@ -927,4 +927,37 @@ td span.filter-badge {
   border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 600;
+}
+
+/* =========================================
+   PERBAIKAN TAMPILAN TABEL SHIFT (TASKS)
+   ========================================= */
+
+/* 1. Paksa lebar kolom yang seimbang */
+.tbl-shift th:nth-child(1), .tbl-shift td:nth-child(1) { width: 40px; text-align: center; } /* No */
+.tbl-shift th:nth-child(2), .tbl-shift td:nth-child(2) { width: auto; text-align: left; }   /* Tugas Harian */
+.tbl-shift th:nth-child(3), .tbl-shift td:nth-child(3) { width: 80px; text-align: center; } /* Status */
+.tbl-shift th:nth-child(4), .tbl-shift td:nth-child(4) { width: 80px; text-align: center; } /* Edit */
+
+/* 2. Izinkan teks tugas turun baris secara normal (bukan per huruf) */
+.tbl-shift td {
+  vertical-align: top !important; /* Teks mulai dari atas */
+}
+
+.task-editable {
+  white-space: pre-wrap !important; /* Menghormati enter/baris baru dari user */
+  word-break: normal !important;    /* Mencegah kata terpotong per huruf */
+  overflow-wrap: break-word !important;
+  line-height: 1.5;
+}
+
+/* 3. Perbaiki Notepad agar teksnya tidak meluber ke kanan */
+.notes-area {
+  width: 100% !important;
+  max-width: 100% !important;
+  white-space: pre-wrap !important; /* Agar teks panjang turun ke bawah */
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  overflow-x: hidden !important; /* Hilangkan scroll horizontal di notepad */
+  line-height: 1.6;
 }
