@@ -511,61 +511,63 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   max-height: 600px; overflow-y: auto;
   box-shadow: 0 2px 6px rgba(0,0,0,0.06);
 }
+
 table { 
   width: 100%; 
   border-collapse: collapse; 
   font-size: 0.88rem; 
-  table-layout: fixed; /* KUNCI 1: Agar lebar kolom tidak berubah-ubah */
+  table-layout: fixed; /* Kunci agar lebar kolom konsisten */
 }
+
+/* 2. Pengaturan Sel (Kunci agar sejajar lurus) */
 th, td {
   padding: 10px 12px; 
-  text-align: left;
   border-bottom: 1px solid #e2e8f0; 
-  white-space: normal; /* KUNCI 2: Mengizinkan teks turun baris jika terlalu panjang */
-  vertical-align: middle; /* Agar teks sejajar di tengah secara vertikal */
-  word-wrap: break-word; /* Memotong kata yang terlalu panjang */
+  white-space: normal; 
+  vertical-align: middle !important; /* KUNCI: Memaksa semua teks di tengah secara vertikal */
+  word-wrap: break-word; 
+  overflow: hidden; /* Mencegah teks meluber keluar kolom */
+  text-overflow: ellipsis; /* Menambahkan titik-titik (...) jika teks kepanjangan */
 }
+
+/* 3. Header Tabel */
 th {
-  background: #1e3a8a; color: #fff;
-  position: sticky; top: 0; z-index: 1; font-weight: 600;
-  text-align: center; /* Judul tabel jadi rata tengah */
-}
-tr:hover { background: #f1f5f9; }
-
-/* KUNCI 3: Pengaturan Lebar & Perataan Spesifik per Kolom */
-/* (Ini akan otomatis berlaku untuk tabel SCB Detection Anda) */
-
-/* Kolom No (Kolom ke-1) */
-td:nth-child(1) { 
+  background: #1e3a8a; 
+  color: #fff;
+  position: sticky; 
+  top: 0; 
+  z-index: 1; 
+  font-weight: 600;
   text-align: center; 
-  width: 50px; 
-}
-/* Kolom Username (Kolom ke-2) */
-td:nth-child(2) { 
-  text-align: left; 
-  white-space: normal; /* Username boleh turun baris jika panjang */
-}
-/* Kolom Total Transaksi (Kolom ke-3) */
-td:nth-child(3) { 
-  text-align: right; 
-  font-variant-numeric: tabular-nums; 
-  width: 150px;
-}
-/* Kolom Jumlah Transaksi (Kolom ke-4) */
-td:nth-child(4) { 
-  text-align: center; 
-  width: 120px;
-}
-/* Kolom Kategori (Kolom ke-5) */
-td:nth-child(5) { 
-  text-align: center; 
-  width: 130px;
 }
 
-/* Memperbaiki class .num yang sudah ada agar rata kanan */
+/* 4. Pengaturan Lebar Kolom Spesifik (Agar Proporsional) */
+/* Sesuaikan persentase ini dengan tabel SCB Detection Anda */
+th:nth-child(1), td:nth-child(1) { width: 6%; text-align: center; }  /* No */
+th:nth-child(2), td:nth-child(2) { width: 34%; text-align: left; }   /* Username */
+th:nth-child(3), td:nth-child(3) { width: 25%; text-align: right; }  /* Total Transaksi */
+th:nth-child(4), td:nth-child(4) { width: 15%; text-align: center; } /* Jumlah Transaksi */
+th:nth-child(5), td:nth-child(5) { width: 20%; text-align: center; } /* Kategori */
+
+/* 5. Class tambahan */
 .num { 
   text-align: right !important; 
   font-variant-numeric: tabular-nums; 
+  padding-right: 20px !important; /* Memberi jarak angka ke garis kanan */
+}
+
+/* 6. Memperbaiki Badge Kategori agar sejajar */
+td span.tag, 
+td span.filter-badge {
+  display: inline-flex;      /* Menggunakan flex agar teks pas di tengah */
+  align-items: center;
+  justify-content: center;
+  min-width: 90px; 
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin: 0 auto;            /* Memastikan badge ada di tengah kolom */
 }
 
 .tag {
