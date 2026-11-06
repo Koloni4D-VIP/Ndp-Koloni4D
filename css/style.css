@@ -544,14 +544,14 @@ th {
 /* 4. Pengaturan Lebar Kolom Spesifik (Agar Proporsional) */
 /* Sesuaikan persentase ini dengan tabel SCB Detection Anda */
 th:nth-child(1), td:nth-child(1) { width: 6%; text-align: center; }  /* No */
-th:nth-child(2), td:nth-child(2) { width: 27%; text-align: left; }   /* Username */
-th:nth-child(3), td:nth-child(3) { width: 25%; text-align: right; }  /* Total Transaksi */
-th:nth-child(4), td:nth-child(4) { width: 15%; text-align: center; } /* Jumlah Transaksi */
+th:nth-child(2), td:nth-child(2) { width: 10%; text-align: left; }   /* Username */
+th:nth-child(3), td:nth-child(3) { width: 10%; text-align: right; }  /* Total Transaksi */
+th:nth-child(4), td:nth-child(4) { width: 10%; text-align: center; } /* Jumlah Transaksi */
 th:nth-child(5), td:nth-child(5) { width: 20%; text-align: center; } /* Kategori */
 
 /* 5. Class tambahan */
 .num { 
-  text-align: right !important; 
+  text-align: center !important; 
   font-variant-numeric: tabular-nums; 
   padding-right: 20px !important; /* Memberi jarak angka ke garis kanan */
 }
